@@ -1,13 +1,15 @@
+import constants
 import random
-import pandas as pd
-import json
-import os
-import torch
-import numpy as np
 import keyword
-import argparse
+import pandas as pd
+import numpy as np
+import torch
 from tokenize import tokenize, untokenize
 import io
+
+import torchtext
+from torchtext.legacy.data import Field, BucketIterator, Iterator
+from torchtext.legacy import data
 
 
 def load_dataset(filepath):
@@ -107,10 +109,49 @@ def build_train_val_dataset(data_points):
     return train_df, val_df
 
 
+def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
+    train_example = []
+    val_example = []
+
+    for j in range(expansion_factor):
+        for i in range(train_df.shape[0]):
+            try:
+                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], fields)
+                train_example.append(ex)
+            except:
+                pass
+
+    for i in range(val_df.shape[0]):
+        try:
+            ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], fields)
+            val_example.append(ex)
+        except:
+            pass
+
+    return train_example, val_example
+
+
 def main():
-    parser = argparse.ArgumentParser()
-    # parser.add_argument('-raw_dir', required=True)
-    parser.add_argument('-dataset_path', required=True)
+
+    random.seed(constants.SEED)
+    torch.manual_seed(constants.SEED)
+    torch.cuda.manual_seed(constants.SEED)
+    torch.backends.cudnn.deterministic = True
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    load_dataset(opt.dataset_path)
+
+    # create the vocabulary using torchtext
+    Input = data.Field(tokenize=constants.TOKENIZER,
+                       init_token=constants.INIT_TOKEN,
+                       eos_token=constants.EOS_TOKEN)
+
+    Output = data.Field(tokenize=mask_tokenize_python,
+                        init_token=constants.INIT_TOKEN,
+                        eos_token=constants.EOS_TOKEN,
+                        lower=False)
+
+    fields = [('Input', Input), ('Output', Output)]
 
 
 if __name__ == '__main__':
