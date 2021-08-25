@@ -1,4 +1,5 @@
 import constants
+from Components.utils import save
 import random
 import keyword
 import pandas as pd
@@ -108,36 +109,35 @@ def build_train_val_dataset(data_points):
 
 
 def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
-    train_example = []
-    val_example = []
+    train_examples = []
+    val_examples = []
 
     for j in range(expansion_factor):
         for i in range(train_df.shape[0]):
             try:
                 ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], fields)
-                train_example.append(ex)
+                train_examples.append(ex)
             except:
                 pass
 
     for i in range(val_df.shape[0]):
         try:
             ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], fields)
-            val_example.append(ex)
+            val_examples.append(ex)
         except:
             pass
 
-    return train_example, val_example
+    return train_examples, val_examples
 
 
 def main():
-
     random.seed(constants.SEED)
     torch.manual_seed(constants.SEED)
     torch.cuda.manual_seed(constants.SEED)
     torch.backends.cudnn.deterministic = True
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    load_dataset(opt.dataset_path)
+    data_points = load_dataset(constants.DATASET_PATH)
+    train_df, val_df = build_train_val_dataset(data_points)
 
     # create the vocabulary using torchtext
     Input = data.Field(tokenize=constants.TOKENIZER,
@@ -150,6 +150,16 @@ def main():
                         lower=False)
 
     fields = [('Input', Input), ('Output', Output)]
+    train_examples, val_examples = expand_vocabulary(train_df, val_df, fields)
+
+    train_data = data.Dataset(train_examples, fields)
+    val_data = data.Dataset(val_examples, fields)
+
+    Input.build_vocab(train_data, min_freq=constants.MIN_FREQ)
+    Output.build_vocab(val_data, min_freq=constants.MIN_FREQ)
+
+    save("../Vocabulary/Input_vocab.pkl", vocab=Input.vocab)
+    save("../Vocabulary/Output_vocab.pkl", vocab=Output.vocab)
 
 
 if __name__ == '__main__':
