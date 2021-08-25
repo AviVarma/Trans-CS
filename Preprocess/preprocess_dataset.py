@@ -4,11 +4,9 @@ import keyword
 import pandas as pd
 import numpy as np
 import torch
-from tokenize import tokenize, untokenize
+from tokenize import tokenize
 import io
 
-import torchtext
-from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 
 
