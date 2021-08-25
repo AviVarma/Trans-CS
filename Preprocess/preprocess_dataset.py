@@ -1,5 +1,5 @@
-import constants
 from Components.utils import save
+from Components import enviroment_variables as env
 import random
 import keyword
 import pandas as pd
@@ -131,22 +131,22 @@ def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
 
 
 def main():
-    random.seed(constants.SEED)
-    torch.manual_seed(constants.SEED)
-    torch.cuda.manual_seed(constants.SEED)
+    random.seed(env.SEED)
+    torch.manual_seed(env.SEED)
+    torch.cuda.manual_seed(env.SEED)
     torch.backends.cudnn.deterministic = True
 
-    data_points = load_dataset(constants.DATASET_PATH)
+    data_points = load_dataset(env.DATASET_PATH)
     train_df, val_df = build_train_val_dataset(data_points)
 
     # create the vocabulary using torchtext
-    Input = data.Field(tokenize=constants.TOKENIZER,
-                       init_token=constants.INIT_TOKEN,
-                       eos_token=constants.EOS_TOKEN)
+    Input = data.Field(tokenize=env.TOKENIZER,
+                       init_token=env.INIT_TOKEN,
+                       eos_token=env.EOS_TOKEN)
 
     Output = data.Field(tokenize=mask_tokenize_python,
-                        init_token=constants.INIT_TOKEN,
-                        eos_token=constants.EOS_TOKEN,
+                        init_token=env.INIT_TOKEN,
+                        eos_token=env.EOS_TOKEN,
                         lower=False)
 
     fields = [('Input', Input), ('Output', Output)]
@@ -155,8 +155,8 @@ def main():
     train_data = data.Dataset(train_examples, fields)
     val_data = data.Dataset(val_examples, fields)
 
-    Input.build_vocab(train_data, min_freq=constants.MIN_FREQ)
-    Output.build_vocab(val_data, min_freq=constants.MIN_FREQ)
+    Input.build_vocab(train_data, min_freq=env.MIN_FREQ)
+    Output.build_vocab(val_data, min_freq=env.MIN_FREQ)
 
     save("../Vocabulary/Input_vocab.pkl", vocab=Input.vocab)
     save("../Vocabulary/Output_vocab.pkl", vocab=Output.vocab)
