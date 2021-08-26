@@ -147,6 +147,7 @@ def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
 
 
 def main():
+    print("Pre-processing...")
     random.seed(env.SEED)
     torch.manual_seed(env.SEED)
     torch.cuda.manual_seed(env.SEED)
@@ -177,6 +178,7 @@ def main():
     # save the vocabs generated which will later be used by the model.
     save("../Vocabulary/Input_vocab.pkl", vocab=Input.vocab)
     save("../Vocabulary/Output_vocab.pkl", vocab=Output.vocab)
+    print("Done! \n Vocabularies saved in: ../Vocabulary/")
 
 
 if __name__ == '__main__':
