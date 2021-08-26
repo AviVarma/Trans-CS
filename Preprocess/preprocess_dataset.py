@@ -15,7 +15,7 @@ def load_dataset(filepath):
     """
     load the dataset from the provided filepath and return the dataset as a list of dictionaries.
     :param filepath: the file path for python to english dataset.
-    :return: array containing a dictionary for all questions and their subsequent solutions.
+    :return data_points: list containing a dictionary for all questions and their subsequent solutions.
     """
     file = open(filepath, "r", encoding="utf-8")
     file_lines = file.readlines()
@@ -38,7 +38,7 @@ def tokenize_python(src):
     """
     Using python's default tokenize library, extract the token type and the token string.
     :param src: python source code in utf-8 from the data_points list
-    :return: list for the source code tokenized format: [python token type, python token]
+    :return tokenized_output: list for the source code tokenized format: [python token type, python token]
     """
     tokenized_output = []
     py_tokens = list(tokenize(io.BytesIO(src.encode('utf-8')).readline))
@@ -57,7 +57,7 @@ def mask_tokenize_python(src, mask_factor=0.3):
     ignored.
     :param src: python source code in utf-8 from the data_points list
     :param mask_factor: chance of a variable being masked default: 0.3
-    :return: list for the source code tokenized format: [python token type, python token]
+    :return tokenized_output: list for the source code tokenized format [python token type, python token]
     """
     var_dict = {}  # Dictionary that stores masked variables
 
@@ -96,6 +96,12 @@ def mask_tokenize_python(src, mask_factor=0.3):
 
 
 def build_train_val_dataset(data_points):
+    """
+    Initialize a dataframe (python_data_frame) with data points as it's input.
+    With this crate a train dataset and validation dataset.
+    :param data_points: list containing a dictionary for all questions and their subsequent solutions.
+    :return train dataframe, validation dataframe: .
+    """
     python_data_frame = pd.DataFrame(data_points)
 
     np.random.seed(0)
@@ -109,6 +115,16 @@ def build_train_val_dataset(data_points):
 
 
 def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
+    """
+    Apply data augmentations expansion_factor times so majority of the augmentations have been
+    captured in the vocabulary. This will generalize and expand the vocabulary beyond the
+    initial size.
+    :param train_df: train dataframe from build_train_val_dataset()
+    :param val_df: validation dataframe from build_train_val_dataset()
+    :param fields: [('Input', Input),('Output', Output)]
+    :param expansion_factor: number of times to apply data augmentations, default=100.
+    :return train_examples, val_examples: list containing all tokens as torchtext.legacy.data.example.Example objects.
+    """
     train_examples = []
     val_examples = []
 
@@ -158,6 +174,7 @@ def main():
     Input.build_vocab(train_data, min_freq=env.MIN_FREQ)
     Output.build_vocab(val_data, min_freq=env.MIN_FREQ)
 
+    # save the vocabs generated which will later be used by the model.
     save("../Vocabulary/Input_vocab.pkl", vocab=Input.vocab)
     save("../Vocabulary/Output_vocab.pkl", vocab=Output.vocab)
 
