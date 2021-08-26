@@ -176,8 +176,8 @@ def main():
     Output.build_vocab(val_data, min_freq=env.MIN_FREQ)
 
     # save the vocabs generated which will later be used by the model.
-    save("../Vocabulary/Input_vocab.pkl", vocab=Input.vocab)
-    save("../Vocabulary/Output_vocab.pkl", vocab=Output.vocab)
+    save(env.VOCAB_INPUT, vocab=Input.vocab)
+    save(env.VOCAB_OUTPUT, vocab=Output.vocab)
     print("Done! \n Vocabularies saved in: ../Vocabulary/")
 
 
