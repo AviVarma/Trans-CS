@@ -16,11 +16,7 @@ class Encoder(nn.Module):
         self.tok_embedding = nn.Embedding(input_dim, hid_dim)
         self.pos_embedding = nn.Embedding(max_length, hid_dim)
 
-        self.layers = nn.ModuleList([EncoderLayer(hid_dim,
-                                                  n_heads,
-                                                  pf_dim,
-                                                  dropout,
-                                                  device)
+        self.layers = nn.ModuleList([EncoderLayer(hid_dim, n_heads, pf_dim, dropout, device)
                                      for _ in range(n_layers)])
 
         self.dropout = nn.Dropout(dropout)
@@ -54,15 +50,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self,
-                 output_dim,
-                 hid_dim,
-                 n_layers,
-                 n_heads,
-                 pf_dim,
-                 dropout,
-                 device,
-                 max_length=10000):
+    def __init__(self, output_dim, hid_dim, n_layers, n_heads, pf_dim, dropout, device, max_length=10000):
         super().__init__()
 
         self.device = device
@@ -70,12 +58,7 @@ class Decoder(nn.Module):
         self.tok_embedding = nn.Embedding(output_dim, hid_dim)
         self.pos_embedding = nn.Embedding(max_length, hid_dim)
 
-        self.layers = nn.ModuleList([DecoderLayer(hid_dim,
-                                                  n_heads,
-                                                  pf_dim,
-                                                  dropout,
-                                                  device)
-                                     for _ in range(n_layers)])
+        self.layers = nn.ModuleList([DecoderLayer(hid_dim, n_heads, pf_dim, dropout, device) for _ in range(n_layers)])
 
         self.fc_out = nn.Linear(hid_dim, output_dim)
 
@@ -114,12 +97,7 @@ class Decoder(nn.Module):
 
 
 class Seq2Seq(nn.Module):
-    def __init__(self,
-                 encoder,
-                 decoder,
-                 src_pad_idx,
-                 trg_pad_idx,
-                 device):
+    def __init__(self, encoder, decoder, src_pad_idx, trg_pad_idx, device):
         super().__init__()
 
         self.encoder = encoder
