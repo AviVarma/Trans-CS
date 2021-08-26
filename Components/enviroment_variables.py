@@ -7,3 +7,19 @@ TOKENIZER = 'spacy'
 MIN_FREQ = 0
 DATASET_PATH = '../Datasets/english_python_data.txt'
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+VOCAB_INPUT = "../Vocabulary/Input_vocab.pkl"
+VOCAB_OUTPUT = "../Vocabulary/Output_vocab.pkl"
+
+
+# vars required for training
+#INPUT_DIM = len(Input.vocab)
+#OUTPUT_DIM = len(Output.vocab)
+HID_DIM = 256
+ENC_LAYERS = 3
+DEC_LAYERS = 3
+ENC_HEADS = 16
+DEC_HEADS = 16
+ENC_PF_DIM = 512
+DEC_PF_DIM = 512
+ENC_DROPOUT = 0.1
+DEC_DROPOUT = 0.1
