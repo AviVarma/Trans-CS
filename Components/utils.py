@@ -1,5 +1,6 @@
 import os
 import torch
+import pickle
 
 
 def save(filename, dataframe=None, vocab=None, model=None):
@@ -21,3 +22,8 @@ def save(filename, dataframe=None, vocab=None, model=None):
         output = open(filename, 'wb')
         pickle.dump(vocab, output)
         output.close()
+
+
+def load(filename, datafreme=False, vocab=False, model=False):
+    if vocab:
+        return pickle.load(open(filename, 'rb'))
