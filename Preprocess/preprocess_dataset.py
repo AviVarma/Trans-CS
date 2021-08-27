@@ -1,3 +1,9 @@
+import os
+import sys
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from Components.utils import save
 from Components import enviroment_variables as env
 import random
@@ -7,7 +13,6 @@ import numpy as np
 import torch
 from tokenize import tokenize
 import io
-
 from torchtext.legacy import data
 
 
@@ -183,7 +188,7 @@ def main():
     # save the vocabs generated which will later be used by the model.
     save(env.VOCAB_INPUT, vocab=Input.vocab)
     save(env.VOCAB_OUTPUT, vocab=Output.vocab)
-    print("Done! \n Vocabularies saved in: ../Vocabulary/")
+    print("Done! \n Vocabularies saved in:", os.path.dirname(env.VOCAB_INPUT))
 
 
 if __name__ == '__main__':
