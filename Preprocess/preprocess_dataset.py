@@ -156,6 +156,11 @@ def main():
     data_points = load_dataset(env.DATASET_PATH)
     train_df, val_df = build_train_val_dataset(data_points)
 
+    save(env.TRAIN_DF_PATH, dataframe=train_df)
+    print("english_python_train.json saved!")
+    save(env.VAL_DF_PATH, dataframe=val_df)
+    print("english_python_val.json saved!")
+
     # create the vocabulary using torchtext
     Input = data.Field(tokenize=env.TOKENIZER,
                        init_token=env.INIT_TOKEN,
