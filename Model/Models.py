@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from Layers import EncoderLayer, DecoderLayer
+from Model.Layers import EncoderLayer, DecoderLayer
 import numpy as np
 
 
