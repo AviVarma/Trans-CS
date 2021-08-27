@@ -1,4 +1,5 @@
 import os
+import pickle
 import sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -186,8 +187,8 @@ def main():
     Output.build_vocab(val_data, min_freq=env.MIN_FREQ)
 
     # save the vocabs generated which will later be used by the model.
-    save(env.VOCAB_INPUT, vocab=Input.vocab)
-    save(env.VOCAB_OUTPUT, vocab=Output.vocab)
+    save(env.VOCAB_INPUT, vocab=Input)
+    save(env.VOCAB_OUTPUT, vocab=Output)
     print("Done! \n Vocabularies saved in:", os.path.dirname(env.VOCAB_INPUT))
 
 
