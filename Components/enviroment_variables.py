@@ -5,13 +5,13 @@ INIT_TOKEN = '<sos>'
 EOS_TOKEN = '<eos>'
 TOKENIZER = 'spacy'
 MIN_FREQ = 0
-DATASET_PATH = '../Datasets/english_python_data.txt'
+DATASET_PATH = 'Datasets/english_python_data.txt'
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-VOCAB_INPUT = "../Vocabulary/Input_vocab.pkl"
-VOCAB_OUTPUT = "../Vocabulary/Output_vocab.pkl"
-TRAIN_DF_PATH = "../Datasets/english_python_dataframe/english_python_train.json"
-VAL_DF_PATH = "../Datasets/english_python_dataframe/english_python_val.json"
-MODEL_SAVE_PATH = "../Checkpoints/model.pt"
+VOCAB_INPUT = "Vocabulary/Input_vocab.pkl"
+VOCAB_OUTPUT = "Vocabulary/Output_vocab.pkl"
+TRAIN_DF_PATH = "Datasets/english_python_dataframe/english_python_train.json"
+VAL_DF_PATH = "Datasets/english_python_dataframe/english_python_val.json"
+MODEL_SAVE_PATH = "Checkpoints/model.pt"
 
 # vars required for training
 #INPUT_DIM = len(Input.vocab)
