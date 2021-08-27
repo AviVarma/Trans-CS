@@ -1,7 +1,7 @@
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
-from Components.utils import load, make_trg_mask
+from Components.utils import load, save, make_trg_mask
 from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
@@ -156,8 +156,8 @@ def main():
         train_data = data.Dataset(train_example, fields)
         valid_data = data.Dataset(val_example, fields)
 
-        BATCH_SIZE = 16
-        train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data), batch_size=BATCH_SIZE,
+
+        train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data), batch_size=env.BATCH_SIZE,
                                                                sort_key=lambda x: len(x.Input),
                                                                sort_within_batch=True, device=env.DEVICE)
 
@@ -170,7 +170,8 @@ def main():
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            torch.save(model.state_dict(), '/content/drive/MyDrive/TheSchoolOfAI/EndCapstone/model.pt')
+            save(env.MODEL_SAVE_PATH, model=model)
+            #torch.save(model.state_dict(), '/content/drive/MyDrive/TheSchoolOfAI/EndCapstone/model.pt')
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
