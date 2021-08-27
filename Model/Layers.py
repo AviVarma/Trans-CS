@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from SubLayers import MultiHeadAttentionLayer, PositionwiseFeedforwardLayer
+from Model.SubLayers import MultiHeadAttentionLayer, PositionwiseFeedforwardLayer
+
 
 class EncoderLayer(nn.Module):
     def __init__(self,
