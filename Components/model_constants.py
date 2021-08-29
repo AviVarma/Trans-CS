@@ -1,5 +1,6 @@
 import pickle
 from Components.enviroment_variables import VOCAB_INPUT, VOCAB_OUTPUT
+from Preprocess.preprocess_dataset import mask_tokenize_python
 
 Input = pickle.load(open(VOCAB_INPUT, 'rb'))
 Output = pickle.load(open(VOCAB_OUTPUT, 'rb'))
