@@ -1,4 +1,5 @@
 import pickle
+from tokenize import untokenize
 
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
@@ -9,6 +10,7 @@ from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
+from eval import evaluate, display_attention, translate_sentence, eng_to_python
 from tqdm import tqdm
 import time
 import math
@@ -103,39 +105,6 @@ def train(model, iterator, optimizer, criterion, clip):
     return sum(print_losses) / n_totals
 
 
-def evaluate(model, iterator, criterion):
-    model.eval()
-
-    n_totals = 0
-    print_losses = []
-
-    with torch.no_grad():
-        for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
-            src = batch.Input.permute(1, 0)
-            trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg)
-
-            output, _ = model(src, trg[:, :-1])
-
-            # output = [batch size, trg len - 1, output dim]
-            # trg = [batch size, trg len]
-
-            output_dim = output.shape[-1]
-
-            output = output.contiguous().view(-1, output_dim)
-            trg = trg[:, 1:].contiguous().view(-1)
-
-            # output = [batch size * trg len - 1, output dim]
-            # trg = [batch size * trg len - 1]
-
-            mask_loss, nTotal = criterion(output, trg, trg_mask)
-
-            print_losses.append(mask_loss.item() * nTotal)
-            n_totals += nTotal
-
-    return sum(print_losses) / n_totals
-
-
 def epoch_time(start_time, end_time):
     elapsed_time = end_time - start_time
     elapsed_mins = int(elapsed_time / 60)
@@ -218,6 +187,17 @@ def main():
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
         print(f'\t Val. Loss: {valid_loss:.3f} |  Val. PPL: {math.exp(valid_loss):7.3f}')
+
+    # Evaluate the model.
+
+    src = "write a function that adds two numbers"
+    src = src.split(" ")
+    translation, attention = translate_sentence(src, Input, Output, model, env.DEVICE)
+
+    print(f'predicted trg sequence: ')
+    print(translation)
+    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+    display_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
