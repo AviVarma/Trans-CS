@@ -1,8 +1,24 @@
+import pickle
+
 import spacy
 import torch
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from tokenize import tokenize, untokenize
+from Model.Models import Encoder, Decoder, Seq2Seq
+from Components import enviroment_variables as env
+from train import initialize_weights
+
+Input = pickle.load(open(env.VOCAB_INPUT, 'rb'))
+Output = pickle.load(open(env.VOCAB_OUTPUT, 'rb'))
+
+fields = [('Input', Input), ('Output', Output)]
+
+INPUT_DIM = len(Input.vocab)
+OUTPUT_DIM = len(Output.vocab)
+
+SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
+TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
 
 
 def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50000):
@@ -48,8 +64,53 @@ def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50
     return trg_tokens[1:], attention
 
 
+def display_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols=2):
+    assert n_rows * n_cols == n_heads
+
+    fig = plt.figure(figsize=(30, 50))
+
+    for i in range(n_heads):
+        ax = fig.add_subplot(n_rows, n_cols, i + 1)
+
+        _attention = attention.squeeze(0)[i].cpu().detach().numpy()
+
+        cax = ax.matshow(_attention, cmap='bone')
+
+        ax.tick_params(labelsize=12)
+        ax.set_xticklabels([''] + ['<sos>'] + [t.lower() for t in sentence] + ['<eos>'],
+                           rotation=45)
+        ax.set_yticklabels([''] + translation)
+
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    #plt.show()
+    plt.savefig("myimage.png")
+
+
 def main():
-    print("test")
+
+    enc = Encoder(INPUT_DIM, env.HID_DIM, env.ENC_LAYERS, env.ENC_HEADS,
+                  env.ENC_PF_DIM, env.ENC_DROPOUT, env.DEVICE)
+
+    dec = Decoder(OUTPUT_DIM, env.HID_DIM, env.DEC_LAYERS, env.DEC_HEADS,
+                  env.DEC_PF_DIM, env.DEC_DROPOUT, env.DEVICE)
+
+    # SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
+    # TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
+
+    model = Seq2Seq(enc, dec, SRC_PAD_IDX, TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
+    model.apply(initialize_weights)
+
+    src = "write a function that adds two numbers"
+    src = src.split(" ")
+    translation, attention = translate_sentence(src, Input, Output, model, env.DEVICE)
+
+    print(f'predicted trg sequence: ')
+    print(translation)
+    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+
+    display_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
