@@ -1,3 +1,5 @@
+import pickle
+
 import torch
 
 SEED = 1234
@@ -16,6 +18,20 @@ MODEL_SAVE_PATH = "Checkpoints/model.pt"
 # vars required for training
 #INPUT_DIM = len(Input.vocab)
 #OUTPUT_DIM = len(Output.vocab)
+
+try:
+    Input = pickle.load(open(VOCAB_INPUT, 'rb'))
+    Output = pickle.load(open(VOCAB_OUTPUT, 'rb'))
+
+    fields = [('Input', Input), ('Output', Output)]
+
+    INPUT_DIM = len(Input.vocab)
+    OUTPUT_DIM = len(Output.vocab)
+
+    SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
+    TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
+except:
+    pass
 
 HID_DIM = 256
 ENC_LAYERS = 3
