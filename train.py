@@ -56,6 +56,7 @@ def make_trg_mask(trg):
 
     return trg_mask
 
+
 def maskNLLLoss(inp, target, mask):
     # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
@@ -63,6 +64,7 @@ def maskNLLLoss(inp, target, mask):
     loss = crossEntropy(inp, target)
     loss = loss.to(env.DEVICE)
     return loss, nTotal.item()
+
 
 def train(model, iterator, optimizer, criterion, clip):
     model.train()
