@@ -10,7 +10,7 @@ from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
-from eval import evaluate, display_attention, translate_sentence, eng_to_python
+from eval import display_attention, translate_sentence, eng_to_python
 from tqdm import tqdm
 import time
 import math
@@ -101,6 +101,39 @@ def train(model, iterator, optimizer, criterion, clip):
 
         print_losses.append(mask_loss.item() * nTotal)
         n_totals += nTotal
+
+    return sum(print_losses) / n_totals
+
+
+def evaluate(model, iterator, criterion):
+    model.eval()
+
+    n_totals = 0
+    print_losses = []
+
+    with torch.no_grad():
+        for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
+            src = batch.Input.permute(1, 0)
+            trg = batch.Output.permute(1, 0)
+            trg_mask = make_trg_mask(trg)
+
+            output, _ = model(src, trg[:, :-1])
+
+            # output = [batch size, trg len - 1, output dim]
+            # trg = [batch size, trg len]
+
+            output_dim = output.shape[-1]
+
+            output = output.contiguous().view(-1, output_dim)
+            trg = trg[:, 1:].contiguous().view(-1)
+
+            # output = [batch size * trg len - 1, output dim]
+            # trg = [batch size * trg len - 1]
+
+            mask_loss, nTotal = criterion(output, trg, trg_mask)
+
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
 
     return sum(print_losses) / n_totals
 

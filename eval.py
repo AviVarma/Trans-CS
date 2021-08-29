@@ -5,7 +5,6 @@ import torch
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from tokenize import tokenize, untokenize
-from train import make_trg_mask
 from tqdm import tqdm
 
 from Model.Models import Encoder, Decoder, Seq2Seq
@@ -24,39 +23,6 @@ from Components import enviroment_variables as env
 #
 # SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
 # TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
-
-
-def evaluate(model, iterator, criterion):
-    model.eval()
-
-    n_totals = 0
-    print_losses = []
-
-    with torch.no_grad():
-        for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
-            src = batch.Input.permute(1, 0)
-            trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg)
-
-            output, _ = model(src, trg[:, :-1])
-
-            # output = [batch size, trg len - 1, output dim]
-            # trg = [batch size, trg len]
-
-            output_dim = output.shape[-1]
-
-            output = output.contiguous().view(-1, output_dim)
-            trg = trg[:, 1:].contiguous().view(-1)
-
-            # output = [batch size * trg len - 1, output dim]
-            # trg = [batch size * trg len - 1]
-
-            mask_loss, nTotal = criterion(output, trg, trg_mask)
-
-            print_losses.append(mask_loss.item() * nTotal)
-            n_totals += nTotal
-
-    return sum(print_losses) / n_totals
 
 
 def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50000):
