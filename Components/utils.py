@@ -3,7 +3,6 @@ import torch
 import pickle
 import pandas as pd
 import json
-from Components import enviroment_variables as env
 from torchtext.legacy import data
 
 
