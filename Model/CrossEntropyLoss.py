@@ -100,12 +100,3 @@ def _is_long(x):
     if hasattr(x, 'data'):
         x = x.data
     return isinstance(x, torch.LongTensor) or isinstance(x, torch.cuda.LongTensor)
-
-
-def maskNLLLoss(inp, target, mask, TRG_PAD_IDX):
-    # print(inp.shape, target.shape, mask.sum())
-    nTotal = mask.sum()
-    crossEntropy = CrossEntropyLoss(ignore_index=TRG_PAD_IDX, smooth_eps=0.20)
-    loss = crossEntropy(inp, target)
-    loss = loss.to(env.DEVICE)
-    return loss, nTotal.item()
