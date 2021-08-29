@@ -1,20 +1,25 @@
+import pickle
+
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
+from Preprocess.preprocess_dataset import mask_tokenize_python
 from Components.utils import load, save
 from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
-import Model.CrossEntropyLoss
+import Model.CrossEntropyLoss as CEL
 from tqdm import tqdm
 import time
 import math
 
 # Global variables.
-Input = load(env.VOCAB_INPUT)
-Output = load(env.VOCAB_OUTPUT)
+Input = pickle.load(open(env.VOCAB_INPUT, 'rb'))
+Output = pickle.load(open(env.VOCAB_OUTPUT, 'rb'))
 
 fields = [('Input', Input), ('Output', Output)]
+
+#print(Input)
 
 INPUT_DIM = len(Input.vocab)
 OUTPUT_DIM = len(Output.vocab)
@@ -51,6 +56,13 @@ def make_trg_mask(trg):
 
     return trg_mask
 
+def maskNLLLoss(inp, target, mask):
+    # print(inp.shape, target.shape, mask.sum())
+    nTotal = mask.sum()
+    crossEntropy = CEL.CrossEntropyLoss(ignore_index=TRG_PAD_IDX, smooth_eps=0.20)
+    loss = crossEntropy(inp, target)
+    loss = loss.to(env.DEVICE)
+    return loss, nTotal.item()
 
 def train(model, iterator, optimizer, criterion, clip):
     model.train()
@@ -160,7 +172,7 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=env.LEARNING_RATE)
 
-    criterion = Model.CrossEntropyLoss.maskNLLLoss
+    criterion = maskNLLLoss
 
     best_valid_loss = float('inf')
 
