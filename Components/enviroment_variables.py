@@ -1,4 +1,5 @@
 import torch
+from Components.utils import load
 
 SEED = 1234
 INIT_TOKEN = '<sos>'
@@ -16,6 +17,19 @@ MODEL_SAVE_PATH = "Checkpoints/model.pt"
 # vars required for training
 #INPUT_DIM = len(Input.vocab)
 #OUTPUT_DIM = len(Output.vocab)
+
+# load vocabularies
+Input = load(VOCAB_INPUT)
+Output = load(VOCAB_OUTPUT)
+
+fields = [('Input', Input), ('Output', Output)]
+
+INPUT_DIM = len(Input.vocab)
+OUTPUT_DIM = len(Output.vocab)
+
+SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
+TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
+
 HID_DIM = 256
 ENC_LAYERS = 3
 DEC_LAYERS = 3
