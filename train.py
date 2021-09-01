@@ -10,21 +10,11 @@ from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
+import Components.Constants as const
 from eval import display_attention, translate_sentence, eng_to_python
 from tqdm import tqdm
 import time
 import math
-
-Input = pickle.load(open(env.VOCAB_INPUT, 'rb'))
-Output = pickle.load(open(env.VOCAB_OUTPUT, 'rb'))
-
-fields = [('Input', Input), ('Output', Output)]
-
-INPUT_DIM = len(Input.vocab)
-OUTPUT_DIM = len(Output.vocab)
-
-SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
-TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
 
 
 def count_parameters(model):
@@ -39,7 +29,7 @@ def initialize_weights(w):
 def maskNLLLoss(inp, target, mask):
     # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
-    crossEntropy = CEL.CrossEntropyLoss(ignore_index=TRG_PAD_IDX, smooth_eps=0.20)
+    crossEntropy = CEL.CrossEntropyLoss(ignore_index=const.TRG_PAD_IDX, smooth_eps=0.20)
     loss = crossEntropy(inp, target)
     loss = loss.to(env.DEVICE)
     return loss, nTotal.item()
@@ -55,7 +45,7 @@ def train(model, iterator, optimizer, criterion, clip):
         loss = 0
         src = batch.Input.permute(1, 0)
         trg = batch.Output.permute(1, 0)
-        trg_mask = make_trg_mask(trg, TRG_PAD_IDX)
+        trg_mask = make_trg_mask(trg, const.TRG_PAD_IDX)
         optimizer.zero_grad()
 
         output, _ = model(src, trg[:, :-1])
@@ -95,7 +85,7 @@ def evaluate(model, iterator, criterion):
         for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
             src = batch.Input.permute(1, 0)
             trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg, TRG_PAD_IDX)
+            trg_mask = make_trg_mask(trg, const.TRG_PAD_IDX)
 
             output, _ = model(src, trg[:, :-1])
 
@@ -139,16 +129,16 @@ def main():
     # INPUT_DIM = len(Input.vocab)
     # OUTPUT_DIM = len(Output.vocab)
 
-    enc = Encoder(INPUT_DIM, env.HID_DIM, env.ENC_LAYERS, env.ENC_HEADS,
+    enc = Encoder(const.INPUT_DIM, env.HID_DIM, env.ENC_LAYERS, env.ENC_HEADS,
                   env.ENC_PF_DIM, env.ENC_DROPOUT, env.DEVICE)
 
-    dec = Decoder(OUTPUT_DIM, env.HID_DIM, env.DEC_LAYERS, env.DEC_HEADS,
+    dec = Decoder(const.OUTPUT_DIM, env.HID_DIM, env.DEC_LAYERS, env.DEC_HEADS,
                   env.DEC_PF_DIM, env.DEC_DROPOUT, env.DEVICE)
 
     # SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
     # TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
 
-    model = Seq2Seq(enc, dec, SRC_PAD_IDX, TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
+    model = Seq2Seq(enc, dec, const.SRC_PAD_IDX, const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
     model.apply(initialize_weights)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=env.LEARNING_RATE)
@@ -166,20 +156,20 @@ def main():
 
         for i in range(train_df.shape[0]):
             try:
-                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], fields)
+                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], const.fields)
                 train_example.append(ex)
             except:
                 pass
 
         for i in range(val_df.shape[0]):
             try:
-                ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], fields)
+                ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], const.fields)
                 val_example.append(ex)
             except:
                 pass
 
-        train_data = data.Dataset(train_example, fields)
-        valid_data = data.Dataset(val_example, fields)
+        train_data = data.Dataset(train_example, const.fields)
+        valid_data = data.Dataset(val_example, const.fields)
 
         train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data), batch_size=env.BATCH_SIZE,
                                                                sort_key=lambda x: len(x.Input),
@@ -205,7 +195,7 @@ def main():
 
     src = "write a function that adds two numbers"
     src = src.split(" ")
-    translation, attention = translate_sentence(src, Input, Output, model, env.DEVICE)
+    translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
 
     print(f'predicted trg sequence: ')
     print(translation)
