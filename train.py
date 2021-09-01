@@ -5,7 +5,7 @@ import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
-from Components.utils import load, save
+from Components.utils import load, save, make_trg_mask
 from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
@@ -36,26 +36,6 @@ def initialize_weights(w):
         nn.init.xavier_uniform_(w.weight.data)
 
 
-def make_trg_mask(trg):
-    # trg = [batch size, trg len]
-
-    trg_pad_mask = (trg != TRG_PAD_IDX).unsqueeze(1).unsqueeze(2)
-
-    # trg_pad_mask = [batch size, 1, 1, trg len]
-
-    trg_len = trg.shape[1]
-
-    trg_sub_mask = torch.tril(torch.ones((trg_len, trg_len), device=env.DEVICE)).bool()
-
-    # trg_sub_mask = [trg len, trg len]
-
-    trg_mask = trg_pad_mask & trg_sub_mask
-
-    # trg_mask = [batch size, 1, trg len, trg len]
-
-    return trg_mask
-
-
 def maskNLLLoss(inp, target, mask):
     # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
@@ -75,7 +55,7 @@ def train(model, iterator, optimizer, criterion, clip):
         loss = 0
         src = batch.Input.permute(1, 0)
         trg = batch.Output.permute(1, 0)
-        trg_mask = make_trg_mask(trg)
+        trg_mask = make_trg_mask(trg, TRG_PAD_IDX)
         optimizer.zero_grad()
 
         output, _ = model(src, trg[:, :-1])
@@ -115,7 +95,7 @@ def evaluate(model, iterator, criterion):
         for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
             src = batch.Input.permute(1, 0)
             trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg)
+            trg_mask = make_trg_mask(trg, TRG_PAD_IDX)
 
             output, _ = model(src, trg[:, :-1])
 

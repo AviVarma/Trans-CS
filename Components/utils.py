@@ -32,3 +32,23 @@ def load(filename, dataframe=False, vocab=False, model=False):
         return pd.read_json(filename)
     if vocab:
         return pickle.load(open(filename, 'rb'))
+
+
+def make_trg_mask(trg, TRG_PAD_IDX):
+    # trg = [batch size, trg len]
+
+    trg_pad_mask = (trg != TRG_PAD_IDX).unsqueeze(1).unsqueeze(2)
+
+    # trg_pad_mask = [batch size, 1, 1, trg len]
+
+    trg_len = trg.shape[1]
+
+    trg_sub_mask = torch.tril(torch.ones((trg_len, trg_len), device=env.DEVICE)).bool()
+
+    # trg_sub_mask = [trg len, trg len]
+
+    trg_mask = trg_pad_mask & trg_sub_mask
+
+    # trg_mask = [batch size, 1, trg len, trg len]
+
+    return trg_mask
