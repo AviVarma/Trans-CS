@@ -42,6 +42,8 @@ def load(filename, dataframe=False, vocab=False, model=False):
         return pd.read_json(filename)
     if vocab:
         return pickle.load(open(filename, 'rb'))
+    if model:
+        return torch.load(filename)
 
 
 def make_trg_mask(trg, TRG_PAD_IDX):
