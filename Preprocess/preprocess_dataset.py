@@ -1,6 +1,7 @@
 import os
-import pickle
 import sys
+
+# Change the current directory to the parent directory so that Preprocess directory can be accessed.
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
