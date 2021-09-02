@@ -193,14 +193,14 @@ def main():
 
     # Evaluate the model.
 
-    src = "write a function that adds two numbers"
-    src = src.split(" ")
-    translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
-
-    print(f'predicted trg sequence: ')
-    print(translation)
-    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    display_attention(src, translation, attention)
+    # src = "write a function that adds two numbers"
+    # src = src.split(" ")
+    # translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
+    #
+    # print(f'predicted trg sequence: ')
+    # print(translation)
+    # print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+    # display_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
