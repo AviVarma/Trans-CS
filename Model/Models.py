@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from Model.Layers import EncoderLayer, DecoderLayer
-import numpy as np
 
 
 class Encoder(nn.Module):
@@ -55,7 +54,7 @@ class Encoder(nn.Module):
         The combined embeddings are then passed through N encoder layers to get src:
         [batch size, src len, hid dim]
         :param src: the source sentence. [batch size, src len]
-        :param src_mask: source mask: same shape as source sentence, but 1 when
+        :param src_mask: Same shape as source sentence, but 1 when
          the token in src sentence is not <pad>, else, 0. [batch size, 1, 1, src len]
         :return src: combined embeddings are then passed through N encoder layers.
         [batch size, src len, hid dim]
@@ -82,16 +81,16 @@ class Decoder(nn.Module):
         """
         Similar to encoder, the tokens and positional embedding layers are initialized.
         The decoder layer is initialized.
-        The decoder representation after the Nth layer is then passed through a linear layer (fc_out)
+        The decoder representation after the Nth layer is then passed through a linear layer (fc_out).
         The softmax operation is contained within the loss function.
         :param output_dim: size of output vocabulary, (n_trg_vocab from original transformer).
         :param hid_dim: Output dimension for decoder (d_model from original transformer).
         :param n_layers: number of identical stack layers.
         :param n_heads: number of heads in multi-head attention.
         :param pf_dim: Position-wise Feedforward Layer dimension, usually larger than hid_dim.
-        :param dropout: nn.Dropout()
+        :param dropout: nn.Dropout().
         :param device: run model on GPU or CPU.
-        :param max_length: maximum length of source code string default 10000
+        :param max_length: maximum length of source code string default 10000.
         """
         super().__init__()
 
@@ -110,14 +109,18 @@ class Decoder(nn.Module):
 
     def forward(self, trg, enc_src, trg_mask, src_mask):
         """
-
-        :param trg:
-        :param enc_src:
-        :param trg_mask:
-        :param src_mask:
-        :return:
+        The decoder's combined embeddings are passed through N (DEC_LAYERS) decoder layers with the
+        encoded source (enc_src) and the source and target masks.
+        The decoder representation after the Nth layer is passed through a linear layer (fc_out).
+        :param trg: target sequence. [batch size, trg len]
+        :param enc_src: Encoded source sentence. [batch size, src len, hid dim]
+        :param trg_mask: Target sequence mask, to prevent decoder from paying attention to tokens that are ahead of it's
+         current position. [batch size, 1, trg len, trg len]
+        :param src_mask: Same shape as source sentence, but 1 when
+         the token in src sentence is not <pad>, else, 0. [batch size, 1, 1, src len]
+        :return output: output probabilities.
+        :return attention: Normalized attention values.
         """
-        # trg = [batch size, trg len]
         # enc_src = [batch size, src len, hid dim]
         # trg_mask = [batch size, 1, trg len, trg len]
         # src_mask = [batch size, 1, 1, src len]
@@ -150,12 +153,13 @@ class Seq2Seq(nn.Module):
 
     def __init__(self, encoder, decoder, src_pad_idx, trg_pad_idx, device):
         """
-
-        :param encoder:
-        :param decoder:
-        :param src_pad_idx:
-        :param trg_pad_idx:
-        :param device:
+        Encapsulates the encoder and decoder, as well as handling the creation of the masks.
+        :param encoder: The encoder function.
+        :param decoder: The decoder function.
+        :param src_pad_idx: Source sequence tokenized and changed to integers for mask creation.
+        :param trg_pad_idx: Target sequence tokenized and changed to integers for mask creation.
+        (elements below the diagonal matrix will be set to the value in the input tensor).
+        :param device: run model on GPU or CPU.
         """
         super().__init__()
 
@@ -170,59 +174,58 @@ class Seq2Seq(nn.Module):
         The source mask is created by checking where the input sequence is not equal to a <pad> token.
         1 where the token is not a <pad> token, 0 otherwise.
         Unsqueeze to (1,2) singleton dimension so that energy can be applied on each item within src.
-        :param src: [batch size, src len],
-        :return src_mask: [batch size, n heads, seq len, seq len]
+        :param src: Source sequence. [batch size, src len],
+        :return src_mask: Source mask. [batch size, n heads, seq len, seq len]
         """
         src_mask = (src != self.src_pad_idx).unsqueeze(1).unsqueeze(2)
         return src_mask
 
     def make_trg_mask(self, trg):
         """
-
-        :param trg:
-        :return:
+        Create a mask for the <pad> tokens like in source mask.
+        Then create a subsequent mask which is a diagonal matrix where:
+        1. the elements above the diagonal will be zero.
+        2. the elements below the diagonal will be set to the value in the input tensor.
+        The subsequent mask is now concatenated with the padding mask using "AND" operator to combine
+        the two masks ensuring both the subsequent tokens and the padding tokens cannot be attended to.
+        :param trg: Target sequence. [batch size, trg len]
+        :return trg_mask: Target mask. [batch size, 1, trg len, trg len]
         """
-        # trg = [batch size, trg len]
-
-        trg_pad_mask = (trg != self.trg_pad_idx).unsqueeze(1).unsqueeze(2)
 
         # trg_pad_mask = [batch size, 1, 1, trg len]
+        trg_pad_mask = (trg != self.trg_pad_idx).unsqueeze(1).unsqueeze(2)
 
         trg_len = trg.shape[1]
 
+        # trg_sub_mask = [trg len, trg len]
         trg_sub_mask = torch.tril(torch.ones((trg_len, trg_len), device=self.device)).bool()
 
-        # trg_sub_mask = [trg len, trg len]
-
-        trg_mask = trg_pad_mask & trg_sub_mask
-
         # trg_mask = [batch size, 1, trg len, trg len]
+        trg_mask = trg_pad_mask & trg_sub_mask
 
         return trg_mask
 
     def forward(self, src, trg):
         """
-
-        :param src:
-        :param trg:
-        :return:
+        construct the following from the functions above:
+        1. source mask.
+        2. target mask.
+        3. The encoder.
+        4. the Decoder.
+        :param src: Source sequence. [batch size, src len]
+        :param trg: Target sequence. [batch size, trg len]
+        :return output: output probabilities. [batch size, trg len, output dim]
+        :return attention: Normalized attention values. [batch size, n heads, trg len, src len]
         """
-        # src = [batch size, src len]
-        # trg = [batch size, trg len]
-
-        src_mask = self.make_src_mask(src)
-        trg_mask = self.make_trg_mask(trg)
 
         # src_mask = [batch size, 1, 1, src len]
         # trg_mask = [batch size, 1, trg len, trg len]
-
-        enc_src = self.encoder(src, src_mask)
+        src_mask = self.make_src_mask(src)
+        trg_mask = self.make_trg_mask(trg)
 
         # enc_src = [batch size, src len, hid dim]
+        enc_src = self.encoder(src, src_mask)
 
         output, attention = self.decoder(trg, enc_src, trg_mask, src_mask)
-
-        # output = [batch size, trg len, output dim]
-        # attention = [batch size, n heads, trg len, src len]
 
         return output, attention
