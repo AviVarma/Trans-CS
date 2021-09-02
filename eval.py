@@ -4,10 +4,8 @@ import spacy
 import torch
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from tokenize import tokenize, untokenize
-from tqdm import tqdm
-
-from Model.Models import Encoder, Decoder, Seq2Seq
+from tokenize import untokenize
+import Components.Constants as Const
 from Components import enviroment_variables as env
 
 
@@ -89,7 +87,7 @@ def display_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_c
         ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
     # plt.show()
-    plt.savefig("myimage.png")
+    plt.savefig(env.ATTENTION_PATH)
 
 
 def eng_to_python(src, Input, Output, model):
@@ -98,6 +96,19 @@ def eng_to_python(src, Input, Output, model):
 
     print(f'predicted trg: \n')
     print(untokenize(translation[:-1]).decode('utf-8'))
+
+
+def main():
+    model = torch.load(env.MODEL_SAVE_PATH)
+    src = "write a function that adds two numbers"
+    src = src.split(" ")
+    translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
+
+    print(f'predicted trg sequence: ')
+    print(translation)
+    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+    display_attention(src, translation, attention)
+
 
 # def main():
 #
@@ -124,5 +135,5 @@ def eng_to_python(src, Input, Output, model):
 #     display_attention(src, translation, attention)
 #
 #
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
