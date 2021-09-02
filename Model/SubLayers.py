@@ -3,15 +3,27 @@ import torch
 
 
 class PositionwiseFeedforwardLayer(nn.Module):
-    def __init__(self, hid_dim, pf_dim, dropout):
-        super().__init__()
 
+    def __init__(self, hid_dim, pf_dim, dropout):
+        """
+
+        :param hid_dim:
+        :param pf_dim:
+        :param dropout:
+        """
+
+        super().__init__()
         self.fc_1 = nn.Linear(hid_dim, pf_dim)
         self.fc_2 = nn.Linear(pf_dim, hid_dim)
-
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
+        """
+
+        :param x:
+        :return:
+        """
+
         # x = [batch size, seq len, hid dim]
 
         x = self.dropout(torch.relu(self.fc_1(x)))
@@ -26,7 +38,16 @@ class PositionwiseFeedforwardLayer(nn.Module):
 
 
 class MultiHeadAttentionLayer(nn.Module):
+
     def __init__(self, hid_dim, n_heads, dropout, device):
+        """
+
+        :param hid_dim:
+        :param n_heads:
+        :param dropout:
+        :param device:
+        """
+
         super().__init__()
 
         assert hid_dim % n_heads == 0
@@ -46,6 +67,15 @@ class MultiHeadAttentionLayer(nn.Module):
         self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(device)
 
     def forward(self, query, key, value, mask=None):
+        """
+
+        :param query:
+        :param key:
+        :param value:
+        :param mask:
+        :return:
+        """
+
         batch_size = query.shape[0]
 
         # query = [batch size, query len, hid dim]
