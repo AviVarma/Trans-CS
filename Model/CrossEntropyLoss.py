@@ -1,12 +1,13 @@
 import torch
-import math
-from Components import enviroment_variables as env
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class CrossEntropyLoss(nn.CrossEntropyLoss):
-    """CrossEntropyLoss - with ability to recieve distrbution as targets, and optional label smoothing"""
+    """
+    Cross entropy loss with label smoothing. Implementation originally from:
+    https://github.com/divyam96/English-to-Python-Converter/blob/main/English_to_Python.ipynb
+    """
 
     def __init__(self, weight=None, ignore_index=-100, reduction='mean', smooth_eps=None, smooth_dist=None, from_logits=True):
         super(CrossEntropyLoss, self).__init__(weight=weight,
@@ -25,7 +26,10 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
 
 def cross_entropy(inputs, target, weight=None, ignore_index=-100, reduction='mean',
                   smooth_eps=None, smooth_dist=None, from_logits=True):
-    """cross entropy loss, with support for target distributions and label smoothing https://arxiv.org/abs/1512.00567"""
+    """
+    cross entropy loss, with support for target distributions and label smoothing:
+    https://arxiv.org/abs/1512.00567
+    """
     smooth_eps = smooth_eps or 0
 
     # ordinary log-liklihood - use cross_entropy from nn
@@ -49,7 +53,7 @@ def cross_entropy(inputs, target, weight=None, ignore_index=-100, reduction='mea
 
     if smooth_eps > 0 and smooth_dist is not None:
         if _is_long(target):
-            target = onehot(target, num_classes).type_as(inputs)
+            target = one_hot(target, num_classes).type_as(inputs)
         if smooth_dist.dim() < target.dim():
             smooth_dist = smooth_dist.unsqueeze(0)
         target.lerp_(smooth_dist, smooth_eps)
@@ -79,12 +83,14 @@ def cross_entropy(inputs, target, weight=None, ignore_index=-100, reduction='mea
     return loss
 
 
-def onehot(indexes, N=None, ignore_index=None):
+def one_hot(indexes, N=None, ignore_index=None):
     """
     Creates a one-representation of indexes with N possible entries
     if N is not specified, it will suit the maximum index appearing.
-    indexes is a long-tensor of indexes
-    ignore_index will be zero in onehot representation
+    :param indexes: a long-tensor of indexes
+    :param N: Number of possible entries. Default None.
+    :param ignore_index: will be zero in onehot representation.
+    :return: Onehot encoded indices.
     """
     if N is None:
         N = indexes.max() + 1
