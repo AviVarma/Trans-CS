@@ -103,6 +103,11 @@ def one_hot(indexes, N=None, ignore_index=None):
 
 
 def _is_long(x):
+    """
+    Check if target is a long tensor.
+    :param x: target from cross entropy.
+    :return: Boolean.
+    """
     if hasattr(x, 'data'):
         x = x.data
     return isinstance(x, torch.LongTensor) or isinstance(x, torch.cuda.LongTensor)
