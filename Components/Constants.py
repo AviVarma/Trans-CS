@@ -25,7 +25,24 @@ fields = [('Input', Input), ('Output', Output)]
 # this parameter is called n_src_vocab.
 INPUT_DIM = len(Input.vocab)
 OUTPUT_DIM = len(Output.vocab)
+HID_DIM = 256
+# The number of layers in the encoder does not have to be equal to the number
+# of layers in the decoder.
+ENC_LAYERS = 3
+DEC_LAYERS = 3
+ENC_HEADS = 16
+DEC_HEADS = 16
+ENC_PF_DIM = 512
+DEC_PF_DIM = 512
+ENC_DROPOUT = 0.1
+DEC_DROPOUT = 0.1
+
+N_EPOCHS = 100
+BATCH_SIZE = 16
+LEARNING_RATE = 0.0005
+CLIP = 1
 
 # Please refer to the original function for definition in class Seq2Seq.
 SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
 TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
+
