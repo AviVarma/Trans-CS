@@ -4,6 +4,7 @@ import spacy
 import torch.optim
 from matplotlib import pyplot as plt, ticker
 
+from Components.utils import is_dir
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
@@ -103,6 +104,7 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
         ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
         ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
+    is_dir(env.ATTENTION_PATH)
     plt.savefig(env.ATTENTION_PATH)
 
 
