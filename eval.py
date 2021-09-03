@@ -169,6 +169,8 @@ def main():
 
     model.apply(initialize_weights)
 
+    model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
+
     src = "write a function that adds two numbers"
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
