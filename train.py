@@ -5,7 +5,7 @@ from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
 from eval import evaluate, translate_sentence, save_attention
-from Components.utils import load, save, make_trg_mask
+from Components.utils import load, save, make_trg_mask, initialize_weights
 from torchtext.legacy.data import BucketIterator
 from torchtext.legacy import data
 import torch.nn as nn
@@ -26,15 +26,15 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def initialize_weights(w):
-    """
-
-    :param w:
-    :return:
-    """
-
-    if hasattr(w, 'weight') and w.weight.dim() > 1:
-        nn.init.xavier_uniform_(w.weight.data)
+# def initialize_weights(w):
+#     """
+#
+#     :param w:
+#     :return:
+#     """
+#
+#     if hasattr(w, 'weight') and w.weight.dim() > 1:
+#         nn.init.xavier_uniform_(w.weight.data)
 
 
 def maskNLLLoss(inp, target, mask):
@@ -123,10 +123,17 @@ def main():
     train_df = load(env.TRAIN_DF_PATH, dataframe=True)
     val_df = load(env.VAL_DF_PATH, dataframe=True)
 
-    #model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
-    Const.model.apply(initialize_weights)
+    enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
+                  Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
 
-    optimizer = torch.optim.Adam(Const.model.parameters(), lr=Const.LEARNING_RATE)
+    dec = Decoder(Const.OUTPUT_DIM, Const.HID_DIM, Const.DEC_LAYERS, Const.DEC_HEADS,
+                  Const.DEC_PF_DIM, Const.DEC_DROPOUT, env.DEVICE)
+
+    model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
+
+    model.apply(initialize_weights)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
 
     #criterion = maskNLLLoss
 
@@ -160,8 +167,8 @@ def main():
                                                                sort_key=lambda x: len(x.Input),
                                                                sort_within_batch=True, device=env.DEVICE)
 
-        train_loss = train(Const.model, train_iterator, optimizer, maskNLLLoss, Const.CLIP)
-        valid_loss = evaluate(Const.model, valid_iterator, maskNLLLoss)
+        train_loss = train(model, train_iterator, optimizer, maskNLLLoss, Const.CLIP)
+        valid_loss = evaluate(model, valid_iterator, maskNLLLoss)
 
         end_time = time.time()
 
@@ -169,7 +176,7 @@ def main():
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            save(env.MODEL_SAVE_PATH, model=Const.model)
+            save(env.MODEL_SAVE_PATH, model=model)
             #torch.save(Const.model.state_dict(), env.MODEL_SAVE_PATH)
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
@@ -180,7 +187,7 @@ def main():
 
     src = "write a function that adds two numbers"
     src = src.split(" ")
-    translation, attention = translate_sentence(src, Const.Input, Const.Output, Const.model, env.DEVICE)
+    translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
 
     print(f'predicted trg sequence: ')
     print(translation)
