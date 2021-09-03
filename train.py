@@ -10,7 +10,7 @@ from torchtext.legacy.data import Field, BucketIterator, Iterator
 from torchtext.legacy import data
 import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
-import Components.Constants as const
+import Components.Constants as Const
 from eval import display_attention, translate_sentence, eng_to_python
 from tqdm import tqdm
 import time
@@ -29,7 +29,7 @@ def initialize_weights(w):
 def maskNLLLoss(inp, target, mask):
     # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
-    crossEntropy = CEL.CrossEntropyLoss(ignore_index=const.TRG_PAD_IDX, smooth_eps=0.20)
+    crossEntropy = CEL.CrossEntropyLoss(ignore_index=Const.TRG_PAD_IDX, smooth_eps=0.20)
     loss = crossEntropy(inp, target)
     loss = loss.to(env.DEVICE)
     return loss, nTotal.item()
@@ -45,7 +45,7 @@ def train(model, iterator, optimizer, criterion, clip):
         loss = 0
         src = batch.Input.permute(1, 0)
         trg = batch.Output.permute(1, 0)
-        trg_mask = make_trg_mask(trg, const.TRG_PAD_IDX)
+        trg_mask = make_trg_mask(trg, Const.TRG_PAD_IDX)
         optimizer.zero_grad()
 
         output, _ = model(src, trg[:, :-1])
@@ -85,7 +85,7 @@ def evaluate(model, iterator, criterion):
         for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
             src = batch.Input.permute(1, 0)
             trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg, const.TRG_PAD_IDX)
+            trg_mask = make_trg_mask(trg, Const.TRG_PAD_IDX)
 
             output, _ = model(src, trg[:, :-1])
 
@@ -129,25 +129,25 @@ def main():
     # INPUT_DIM = len(Input.vocab)
     # OUTPUT_DIM = len(Output.vocab)
 
-    enc = Encoder(const.INPUT_DIM, env.HID_DIM, env.ENC_LAYERS, env.ENC_HEADS,
-                  env.ENC_PF_DIM, env.ENC_DROPOUT, env.DEVICE)
+    enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
+                  Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
 
-    dec = Decoder(const.OUTPUT_DIM, env.HID_DIM, env.DEC_LAYERS, env.DEC_HEADS,
-                  env.DEC_PF_DIM, env.DEC_DROPOUT, env.DEVICE)
+    dec = Decoder(Const.OUTPUT_DIM, Const.HID_DIM, Const.DEC_LAYERS, Const.DEC_HEADS,
+                  Const.DEC_PF_DIM, Const.DEC_DROPOUT, env.DEVICE)
 
     # SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
     # TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
 
-    model = Seq2Seq(enc, dec, const.SRC_PAD_IDX, const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
+    model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
     model.apply(initialize_weights)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=env.LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
 
     #criterion = maskNLLLoss
 
     best_valid_loss = float('inf')
 
-    for epoch in range(env.N_EPOCHS):
+    for epoch in range(Const.N_EPOCHS):
 
         start_time = time.time()
 
@@ -156,26 +156,26 @@ def main():
 
         for i in range(train_df.shape[0]):
             try:
-                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], const.fields)
+                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], Const.fields)
                 train_example.append(ex)
             except:
                 pass
 
         for i in range(val_df.shape[0]):
             try:
-                ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], const.fields)
+                ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], Const.fields)
                 val_example.append(ex)
             except:
                 pass
 
-        train_data = data.Dataset(train_example, const.fields)
-        valid_data = data.Dataset(val_example, const.fields)
+        train_data = data.Dataset(train_example, Const.fields)
+        valid_data = data.Dataset(val_example, Const.fields)
 
-        train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data), batch_size=env.BATCH_SIZE,
+        train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data), batch_size=Const.BATCH_SIZE,
                                                                sort_key=lambda x: len(x.Input),
                                                                sort_within_batch=True, device=env.DEVICE)
 
-        train_loss = train(model, train_iterator, optimizer, maskNLLLoss, env.CLIP)
+        train_loss = train(model, train_iterator, optimizer, maskNLLLoss, Const.CLIP)
         valid_loss = evaluate(model, valid_iterator, maskNLLLoss)
 
         end_time = time.time()
