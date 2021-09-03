@@ -20,14 +20,14 @@ def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50
     Create a source sentence mask. Feed both source sentence and mask into the encoder.
     Create a list for the output sentence initialized with <sos> token.
 
-    :param sentence: source sentence to translate.
+    :param sentence: Source sentence to translate.
     :param src_field: Input vocabulary.
     :param trg_field: Output vocabulary.
     :param model: Trained model.
-    :param device: run model on GPU or CPU.
+    :param device: Run model on GPU or CPU.
     :param max_len: maximum length of output. (Default 50000)
     :return output: output sentence (with the <sos> token removed).
-    :return attention: attention from the last layer.
+    :return attention: Attention from the last layer.
     """
 
     model.eval()
@@ -74,14 +74,14 @@ def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50
 
 def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols=2):
     """
+    Save the attention's confusion matrix over the source sentence for each step of the decoding.
 
-    :param sentence:
-    :param translation:
-    :param attention:
-    :param n_heads:
-    :param n_rows:
-    :param n_cols:
-    :return:
+    :param sentence: Source sentence tokenized.
+    :param translation: Saved Input vocabulary
+    :param attention: Normalized attention from model.
+    :param n_heads: Number of heads in model. Default 8
+    :param n_rows: Number of rows in graph.
+    :param n_cols: Number of columns in graph.
     """
 
     assert n_rows * n_cols == n_heads
@@ -116,11 +116,13 @@ def eng_to_python(src, Input, Output, model):
 
 def evaluate(model, iterator, criterion):
     """
+    The evaluation loop, similar to the training loop, but without parameter updates and gradient
+    calculation. calculate the Loss for the current model.
 
-    :param model:
-    :param iterator:
-    :param criterion:
-    :return:
+    :param model: Seq2Seq fully constructed transformer model.
+    :param iterator: BucketIterator split into batches.
+    :param criterion: NKLLLoss.
+    :return: Loss for current epoch.
     """
 
     model.eval()
