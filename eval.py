@@ -153,15 +153,15 @@ def evaluate(model, iterator, criterion):
 
 
 def main():
-    model = Const.model
-    # src = "write a function that adds two numbers"
-    # src = src.split(" ")
-    # translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
-    #
-    # print(f'predicted trg sequence: ')
-    # print(translation)
-    # print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    # save_attention(src, translation, attention)
+    model = Const.model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
+    src = "write a function that adds two numbers"
+    src = src.split(" ")
+    translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
+
+    print(f'predicted trg sequence: ')
+    print(translation)
+    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+    save_attention(src, translation, attention)
 
 
 # def main():

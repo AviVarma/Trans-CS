@@ -1,8 +1,10 @@
+from tokenize import untokenize
+
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
-from eval import evaluate
+from eval import evaluate, translate_sentence, save_attention
 from Components.utils import load, save, make_trg_mask
 from torchtext.legacy.data import BucketIterator
 from torchtext.legacy import data
@@ -167,8 +169,8 @@ def main():
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            #save(env.MODEL_SAVE_PATH, model=Const.model)
-            torch.save(Const.model.state_dict(), env.MODEL_SAVE_PATH)
+            save(env.MODEL_SAVE_PATH, model=Const.model)
+            #torch.save(Const.model.state_dict(), env.MODEL_SAVE_PATH)
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
@@ -178,12 +180,12 @@ def main():
 
     src = "write a function that adds two numbers"
     src = src.split(" ")
-    translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
+    translation, attention = translate_sentence(src, Const.Input, Const.Output, Const.model, env.DEVICE)
 
     print(f'predicted trg sequence: ')
     print(translation)
     print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    display_attention(src, translation, attention)
+    save_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
