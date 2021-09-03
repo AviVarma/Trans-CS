@@ -8,6 +8,17 @@ import Components.enviroment_variables as env
 from torchtext.legacy import data
 
 
+def is_dir(filename):
+    """
+    check if directory exists, if not, then create the required directory.
+
+    :param filename: the file path eg: ./here/file.json
+    """
+    dir_name = os.path.dirname(filename)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+
 def save(filename, dataframe: pd.DataFrame = None, vocab: data = None, model=None):
     """
     Save both modified datasets and models.
@@ -17,9 +28,7 @@ def save(filename, dataframe: pd.DataFrame = None, vocab: data = None, model=Non
     :param vocab: provide a vocabulary to save.
     :param model: provide a model to save.
     """
-    dir_name = os.path.dirname(filename)
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
+    is_dir(filename)
     if dataframe is not None:
         dataframe.to_json(filename, orient='records')
     if model is not None:
