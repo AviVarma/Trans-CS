@@ -7,16 +7,10 @@ from matplotlib import pyplot as plt, ticker
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
-from eval import evaluate, translate_sentence, save_attention
-from Components.utils import load, save, make_trg_mask, initialize_weights
-from torchtext.legacy.data import BucketIterator
-from torchtext.legacy import data
-import torch.nn as nn
-import Model.CrossEntropyLoss as CEL
+from Components.utils import make_trg_mask, initialize_weights
 import Components.Constants as Const
 from tqdm import tqdm
-import time
-import math
+
 
 def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50000):
     """
