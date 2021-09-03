@@ -1,29 +1,32 @@
-import pickle
-
 import spacy
 import torch
+from tqdm import tqdm
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 from tokenize import untokenize
+import matplotlib.ticker as ticker
 import Components.Constants as Const
+from Components.utils import make_trg_mask
 from Components import enviroment_variables as env
 
 
-# from train import initialize_weights
-#
-# Input = pickle.load(open(env.VOCAB_INPUT, 'rb'))
-# Output = pickle.load(open(env.VOCAB_OUTPUT, 'rb'))
-#
-# fields = [('Input', Input), ('Output', Output)]
-#
-# INPUT_DIM = len(Input.vocab)
-# OUTPUT_DIM = len(Output.vocab)
-#
-# SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
-# TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
-
-
 def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50000):
+    """
+    Generate translation from trained model by outputting translated sentence with <sos> removed.
+    First tokenize the source sentence if not tokenized already. Append <sos> and <eos> tokens.
+    numericalize source sentence and convert it to a tensor, then add a batch dimension.
+    Create a source sentence mask. Feed both source sentence and mask into the encoder.
+    Create a list for the output sentence initialized with <sos> token.
+
+    :param sentence: source sentence to translate.
+    :param src_field: Input vocabulary.
+    :param trg_field: Output vocabulary.
+    :param model: Trained model.
+    :param device: run model on GPU or CPU.
+    :param max_len: maximum length of output. (Default 50000)
+    :return output: output sentence (with the <sos> token removed).
+    :return attention: attention from the last layer.
+    """
+
     model.eval()
 
     if isinstance(sentence, str):
@@ -66,7 +69,18 @@ def translate_sentence(sentence, src_field, trg_field, model, device, max_len=50
     return trg_tokens[1:], attention
 
 
-def display_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols=2):
+def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols=2):
+    """
+
+    :param sentence:
+    :param translation:
+    :param attention:
+    :param n_heads:
+    :param n_rows:
+    :param n_cols:
+    :return:
+    """
+
     assert n_rows * n_cols == n_heads
 
     fig = plt.figure(figsize=(30, 50))
@@ -86,7 +100,6 @@ def display_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_c
         ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
         ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
-    # plt.show()
     plt.savefig(env.ATTENTION_PATH)
 
 
@@ -98,6 +111,47 @@ def eng_to_python(src, Input, Output, model):
     print(untokenize(translation[:-1]).decode('utf-8'))
 
 
+def evaluate(model, iterator, criterion):
+    """
+
+    :param model:
+    :param iterator:
+    :param criterion:
+    :return:
+    """
+
+    model.eval()
+
+    n_totals = 0
+    print_losses = []
+
+    with torch.no_grad():
+        for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
+            src = batch.Input.permute(1, 0)
+            trg = batch.Output.permute(1, 0)
+            trg_mask = make_trg_mask(trg, Const.TRG_PAD_IDX)
+
+            output, _ = model(src, trg[:, :-1])
+
+            # output = [batch size, trg len - 1, output dim]
+            # trg = [batch size, trg len]
+
+            output_dim = output.shape[-1]
+
+            output = output.contiguous().view(-1, output_dim)
+            trg = trg[:, 1:].contiguous().view(-1)
+
+            # output = [batch size * trg len - 1, output dim]
+            # trg = [batch size * trg len - 1]
+
+            mask_loss, nTotal = criterion(output, trg, trg_mask)
+
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
+
+    return sum(print_losses) / n_totals
+
+
 def main():
     model = torch.load(env.MODEL_SAVE_PATH)
     src = "write a function that adds two numbers"
@@ -107,7 +161,7 @@ def main():
     print(f'predicted trg sequence: ')
     print(translation)
     print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    display_attention(src, translation, attention)
+    save_attention(src, translation, attention)
 
 
 # def main():
@@ -133,7 +187,6 @@ def main():
 #     print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
 #
 #     display_attention(src, translation, attention)
-#
-#
+
 if __name__ == '__main__':
     main()
