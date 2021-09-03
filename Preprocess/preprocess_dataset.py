@@ -1,13 +1,5 @@
 import os
 import sys
-
-# Change the current directory to the parent directory so that Preprocess directory can be accessed.
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
-from Components.utils import save
-from Components import enviroment_variables as env
 import random
 import keyword
 import pandas as pd
@@ -17,10 +9,18 @@ from tokenize import tokenize
 import io
 from torchtext.legacy import data
 
+# Change the current directory to the parent directory so that Preprocess directory can be accessed.
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+from Components.utils import save
+from Components import enviroment_variables as env
+
 
 def load_dataset(filepath):
     """
     load the dataset from the provided filepath and return the dataset as a list of dictionaries.
+
     :param filepath: the file path for python to english dataset.
     :return data_points: list containing a dictionary for all questions and their subsequent solutions.
     """
@@ -44,6 +44,7 @@ def load_dataset(filepath):
 def tokenize_python(src):
     """
     Using python's default tokenize library, extract the token type and the token string.
+
     :param src: python source code in utf-8 from the data_points list
     :return tokenized_output: list for the source code tokenized format: [python token type, python token]
     """
@@ -62,6 +63,7 @@ def mask_tokenize_python(src, mask_factor=0.3):
     fixate on the way variables are named amd understands the program's logic. When randomly picking
     the variables, python's reserved keyword literals, control structures and object properties are
     ignored.
+
     :param src: python source code in utf-8 from the data_points list
     :param mask_factor: chance of a variable being masked default: 0.3
     :return tokenized_output: list for the source code tokenized format [python token type, python token]
@@ -106,6 +108,7 @@ def build_train_val_dataset(data_points):
     """
     Initialize a dataframe (python_data_frame) with data points as it's input.
     With this crate a train dataset and validation dataset.
+
     :param data_points: list containing a dictionary for all questions and their subsequent solutions.
     :return train dataframe, validation dataframe: .
     """
@@ -126,6 +129,7 @@ def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
     Apply data augmentations expansion_factor times so majority of the augmentations have been
     captured in the vocabulary. This will generalize and expand the vocabulary beyond the
     initial size.
+
     :param train_df: train dataframe from build_train_val_dataset()
     :param val_df: validation dataframe from build_train_val_dataset()
     :param fields: [('Input', Input),('Output', Output)]
