@@ -2,6 +2,7 @@ import os
 import torch
 import pickle
 import pandas as pd
+import torch.nn as nn
 import json
 import Components.enviroment_variables as env
 from torchtext.legacy import data
@@ -47,6 +48,17 @@ def load(filename, dataframe=False, vocab=False, model=False):
         return pickle.load(open(filename, 'rb'))
     if model:
         return torch.load(filename)
+
+
+def initialize_weights(w):
+    """
+    Xavier uniform weights initialization.
+    :param w: 
+    :return:
+    """
+
+    if hasattr(w, 'weight') and w.weight.dim() > 1:
+        nn.init.xavier_uniform_(w.weight.data)
 
 
 def make_trg_mask(trg, TRG_PAD_IDX):
