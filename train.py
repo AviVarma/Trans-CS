@@ -1,32 +1,49 @@
-import pickle
-from tokenize import untokenize
-
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
+from eval import evaluate
 from Components.utils import load, save, make_trg_mask
-from torchtext.legacy.data import Field, BucketIterator, Iterator
+from torchtext.legacy.data import BucketIterator
 from torchtext.legacy import data
 import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
 import Components.Constants as Const
-from eval import display_attention, translate_sentence, eng_to_python
 from tqdm import tqdm
 import time
 import math
 
 
 def count_parameters(model):
+    """
+
+    :param model:
+    :return:
+    """
+
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def initialize_weights(w):
+    """
+
+    :param w:
+    :return:
+    """
+
     if hasattr(w, 'weight') and w.weight.dim() > 1:
         nn.init.xavier_uniform_(w.weight.data)
 
 
 def maskNLLLoss(inp, target, mask):
+    """
+
+    :param inp:
+    :param target:
+    :param mask:
+    :return:
+    """
+
     # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
     crossEntropy = CEL.CrossEntropyLoss(ignore_index=Const.TRG_PAD_IDX, smooth_eps=0.20)
@@ -36,6 +53,16 @@ def maskNLLLoss(inp, target, mask):
 
 
 def train(model, iterator, optimizer, criterion, clip):
+    """
+
+    :param model:
+    :param iterator:
+    :param optimizer:
+    :param criterion:
+    :param clip:
+    :return:
+    """
+
     model.train()
 
     n_totals = 0
@@ -75,40 +102,14 @@ def train(model, iterator, optimizer, criterion, clip):
     return sum(print_losses) / n_totals
 
 
-def evaluate(model, iterator, criterion):
-    model.eval()
-
-    n_totals = 0
-    print_losses = []
-
-    with torch.no_grad():
-        for i, batch in tqdm(enumerate(iterator), total=len(iterator)):
-            src = batch.Input.permute(1, 0)
-            trg = batch.Output.permute(1, 0)
-            trg_mask = make_trg_mask(trg, Const.TRG_PAD_IDX)
-
-            output, _ = model(src, trg[:, :-1])
-
-            # output = [batch size, trg len - 1, output dim]
-            # trg = [batch size, trg len]
-
-            output_dim = output.shape[-1]
-
-            output = output.contiguous().view(-1, output_dim)
-            trg = trg[:, 1:].contiguous().view(-1)
-
-            # output = [batch size * trg len - 1, output dim]
-            # trg = [batch size * trg len - 1]
-
-            mask_loss, nTotal = criterion(output, trg, trg_mask)
-
-            print_losses.append(mask_loss.item() * nTotal)
-            n_totals += nTotal
-
-    return sum(print_losses) / n_totals
-
-
 def epoch_time(start_time, end_time):
+    """
+
+    :param start_time:
+    :param end_time:
+    :return:
+    """
+
     elapsed_time = end_time - start_time
     elapsed_mins = int(elapsed_time / 60)
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))

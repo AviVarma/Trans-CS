@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 from Model.SubLayers import MultiHeadAttentionLayer, PositionwiseFeedforwardLayer
 
