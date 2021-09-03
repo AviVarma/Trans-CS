@@ -1,7 +1,8 @@
 import os
 import pickle
 import sys
-from Components.enviroment_variables import VOCAB_INPUT, VOCAB_OUTPUT
+from Components.enviroment_variables import VOCAB_INPUT, VOCAB_OUTPUT, DEVICE
+from Model.Models import Seq2Seq, Encoder, Decoder
 
 # Change the current directory to the parent directory so that Preprocess directory can be accessed.
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +38,7 @@ DEC_PF_DIM = 512
 ENC_DROPOUT = 0.1
 DEC_DROPOUT = 0.1
 
-N_EPOCHS = 100
+N_EPOCHS = 50
 BATCH_SIZE = 16
 LEARNING_RATE = 0.0005
 CLIP = 1
@@ -45,4 +46,12 @@ CLIP = 1
 # Please refer to the original function for definition in class Seq2Seq.
 SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
 TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
+
+enc = Encoder(INPUT_DIM, HID_DIM, ENC_LAYERS, ENC_HEADS,
+                  ENC_PF_DIM, ENC_DROPOUT, DEVICE)
+
+dec = Decoder(OUTPUT_DIM, HID_DIM, DEC_LAYERS, DEC_HEADS,
+                  DEC_PF_DIM, DEC_DROPOUT, DEVICE)
+
+model = Seq2Seq(enc, dec, SRC_PAD_IDX, TRG_PAD_IDX, DEVICE).to(DEVICE)
 

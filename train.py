@@ -121,28 +121,10 @@ def main():
     train_df = load(env.TRAIN_DF_PATH, dataframe=True)
     val_df = load(env.VAL_DF_PATH, dataframe=True)
 
-    # load vocabularies
-    # Input = load(env.VOCAB_INPUT)  # try adding these to environment vars.
-    # Output = load(env.VOCAB_OUTPUT)
-    #
-    # fields = [('Input', Input), ('Output', Output)]
-    #
-    # INPUT_DIM = len(Input.vocab)
-    # OUTPUT_DIM = len(Output.vocab)
+    #model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
+    Const.model.apply(initialize_weights)
 
-    enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
-                  Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
-
-    dec = Decoder(Const.OUTPUT_DIM, Const.HID_DIM, Const.DEC_LAYERS, Const.DEC_HEADS,
-                  Const.DEC_PF_DIM, Const.DEC_DROPOUT, env.DEVICE)
-
-    # SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
-    # TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
-
-    model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
-    model.apply(initialize_weights)
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
+    optimizer = torch.optim.Adam(Const.model.parameters(), lr=Const.LEARNING_RATE)
 
     #criterion = maskNLLLoss
 
@@ -176,8 +158,8 @@ def main():
                                                                sort_key=lambda x: len(x.Input),
                                                                sort_within_batch=True, device=env.DEVICE)
 
-        train_loss = train(model, train_iterator, optimizer, maskNLLLoss, Const.CLIP)
-        valid_loss = evaluate(model, valid_iterator, maskNLLLoss)
+        train_loss = train(Const.model, train_iterator, optimizer, maskNLLLoss, Const.CLIP)
+        valid_loss = evaluate(Const.model, valid_iterator, maskNLLLoss)
 
         end_time = time.time()
 
@@ -185,8 +167,8 @@ def main():
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            save(env.MODEL_SAVE_PATH, model=model)
-            # torch.save(model.state_dict(), '/content/drive/MyDrive/TheSchoolOfAI/EndCapstone/model.pt')
+            #save(env.MODEL_SAVE_PATH, model=Const.model)
+            torch.save(Const.model.state_dict(), env.MODEL_SAVE_PATH)
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
@@ -194,14 +176,14 @@ def main():
 
     # Evaluate the model.
 
-    # src = "write a function that adds two numbers"
-    # src = src.split(" ")
-    # translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
-    #
-    # print(f'predicted trg sequence: ')
-    # print(translation)
-    # print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    # display_attention(src, translation, attention)
+    src = "write a function that adds two numbers"
+    src = src.split(" ")
+    translation, attention = translate_sentence(src, const.Input, const.Output, model, env.DEVICE)
+
+    print(f'predicted trg sequence: ')
+    print(translation)
+    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
+    display_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
