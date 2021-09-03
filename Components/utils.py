@@ -53,8 +53,8 @@ def load(filename, dataframe=False, vocab=False, model=False):
 def initialize_weights(w):
     """
     Xavier uniform weights initialization.
-    :param w: 
-    :return:
+
+    :param w: weights input. [model.apply(initialize_weights)]
     """
 
     if hasattr(w, 'weight') and w.weight.dim() > 1:
