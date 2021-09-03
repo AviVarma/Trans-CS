@@ -46,12 +46,3 @@ CLIP = 1
 # Please refer to the original function for definition in class Seq2Seq.
 SRC_PAD_IDX = Input.vocab.stoi[Input.pad_token]
 TRG_PAD_IDX = Output.vocab.stoi[Output.pad_token]
-
-enc = Encoder(INPUT_DIM, HID_DIM, ENC_LAYERS, ENC_HEADS,
-                  ENC_PF_DIM, ENC_DROPOUT, DEVICE)
-
-dec = Decoder(OUTPUT_DIM, HID_DIM, DEC_LAYERS, DEC_HEADS,
-                  DEC_PF_DIM, DEC_DROPOUT, DEVICE)
-
-model = Seq2Seq(enc, dec, SRC_PAD_IDX, TRG_PAD_IDX, DEVICE).to(DEVICE)
-
