@@ -13,6 +13,7 @@ class Encoder(nn.Module):
         Now the order of tokens must be recorded using the positional embedding layer (pos_embedding).
         Initialize the Encoder sub layers.
         Initialize the dropout and scale function.
+
         :param input_dim: size of input vocabulary, (n_src_vocab from original transformer).
         :param hid_dim: Output dimension for encoder (d_model from original transformer).
         :param n_layers: number of identical stack layers.
@@ -53,6 +54,7 @@ class Encoder(nn.Module):
         embeddings. Dropout is applied to the combined embeddings.
         The combined embeddings are then passed through N encoder layers to get src:
         [batch size, src len, hid dim]
+
         :param src: the source sentence. [batch size, src len]
         :param src_mask: Same shape as source sentence, but 1 when
          the token in src sentence is not <pad>, else, 0. [batch size, 1, 1, src len]
@@ -83,6 +85,7 @@ class Decoder(nn.Module):
         The decoder layer is initialized.
         The decoder representation after the Nth layer is then passed through a linear layer (fc_out).
         The softmax operation is contained within the loss function.
+
         :param output_dim: size of output vocabulary, (n_trg_vocab from original transformer).
         :param hid_dim: Output dimension for decoder (d_model from original transformer).
         :param n_layers: number of identical stack layers.
@@ -112,6 +115,7 @@ class Decoder(nn.Module):
         The decoder's combined embeddings are passed through N (DEC_LAYERS) decoder layers with the
         encoded source (enc_src) and the source and target masks.
         The decoder representation after the Nth layer is passed through a linear layer (fc_out).
+
         :param trg: target sequence. [batch size, trg len]
         :param enc_src: Encoded source sentence. [batch size, src len, hid dim]
         :param trg_mask: Target sequence mask, to prevent decoder from paying attention to tokens that are ahead of it's
@@ -154,6 +158,7 @@ class Seq2Seq(nn.Module):
     def __init__(self, encoder, decoder, src_pad_idx, trg_pad_idx, device):
         """
         Encapsulates the encoder and decoder, as well as handling the creation of the masks.
+
         :param encoder: The encoder function.
         :param decoder: The decoder function.
         :param src_pad_idx: Source sequence tokenized and changed to integers for mask creation.
@@ -174,6 +179,7 @@ class Seq2Seq(nn.Module):
         The source mask is created by checking where the input sequence is not equal to a <pad> token.
         1 where the token is not a <pad> token, 0 otherwise.
         Unsqueeze to (1,2) singleton dimension so that energy can be applied on each item within src.
+
         :param src: Source sequence. [batch size, src len],
         :return src_mask: Source mask. [batch size, n heads, seq len, seq len]
         """
@@ -188,6 +194,7 @@ class Seq2Seq(nn.Module):
         2. the elements below the diagonal will be set to the value in the input tensor.
         The subsequent mask is now concatenated with the padding mask using "AND" operator to combine
         the two masks ensuring both the subsequent tokens and the padding tokens cannot be attended to.
+
         :param trg: Target sequence. [batch size, trg len]
         :return trg_mask: Target mask. [batch size, 1, trg len, trg len]
         """
@@ -212,6 +219,7 @@ class Seq2Seq(nn.Module):
         2. target mask.
         3. The encoder.
         4. the Decoder.
+
         :param src: Source sequence. [batch size, src len]
         :param trg: Target sequence. [batch size, trg len]
         :return output: output probabilities. [batch size, trg len, output dim]
