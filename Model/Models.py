@@ -14,13 +14,13 @@ class Encoder(nn.Module):
         Initialize the Encoder sub layers.
         Initialize the dropout and scale function.
 
-        :param input_dim: size of input vocabulary, (n_src_vocab from original transformer).
+        :param input_dim: Size of input vocabulary, (n_src_vocab from original transformer).
         :param hid_dim: Output dimension for encoder (d_model from original transformer).
-        :param n_layers: number of identical stack layers.
-        :param n_heads: number of heads in multi-head attention.
+        :param n_layers: Number of identical stack layers.
+        :param n_heads: Number of heads in multi-head attention.
         :param pf_dim: Position-wise Feedforward Layer dimension, usually larger than hid_dim.
         :param dropout: nn.Dropout()
-        :param device: run model on GPU or CPU.
+        :param device: Run model on GPU or CPU.
         :param max_length: maximum length of sequence default 1000
         """
 
@@ -55,10 +55,10 @@ class Encoder(nn.Module):
         The combined embeddings are then passed through N encoder layers to get src:
         [batch size, src len, hid dim]
 
-        :param src: the source sentence. [batch size, src len]
+        :param src: The source sentence. [batch size, src len]
         :param src_mask: Same shape as source sentence, but 1 when
          the token in src sentence is not <pad>, else, 0. [batch size, 1, 1, src len]
-        :return src: combined embeddings are then passed through N encoder layers.
+        :return src: Combined embeddings are then passed through N encoder layers.
         [batch size, src len, hid dim]
         """
 
@@ -86,14 +86,14 @@ class Decoder(nn.Module):
         The decoder representation after the Nth layer is then passed through a linear layer (fc_out).
         The softmax operation is contained within the loss function.
 
-        :param output_dim: size of output vocabulary, (n_trg_vocab from original transformer).
+        :param output_dim: Size of output vocabulary, (n_trg_vocab from original transformer).
         :param hid_dim: Output dimension for decoder (d_model from original transformer).
-        :param n_layers: number of identical stack layers.
-        :param n_heads: number of heads in multi-head attention.
+        :param n_layers: Number of identical stack layers.
+        :param n_heads: Number of heads in multi-head attention.
         :param pf_dim: Position-wise Feedforward Layer dimension, usually larger than hid_dim.
         :param dropout: nn.Dropout().
-        :param device: run model on GPU or CPU.
-        :param max_length: maximum length of source code string default 10000.
+        :param device: Run model on GPU or CPU.
+        :param max_length: Maximum length of source code string default 10000.
         """
         super().__init__()
 
@@ -116,13 +116,13 @@ class Decoder(nn.Module):
         encoded source (enc_src) and the source and target masks.
         The decoder representation after the Nth layer is passed through a linear layer (fc_out).
 
-        :param trg: target sequence. [batch size, trg len]
+        :param trg: Target sequence. [batch size, trg len]
         :param enc_src: Encoded source sentence. [batch size, src len, hid dim]
         :param trg_mask: Target sequence mask, to prevent decoder from paying attention to tokens that are ahead of it's
          current position. [batch size, 1, trg len, trg len]
         :param src_mask: Same shape as source sentence, but 1 when
          the token in src sentence is not <pad>, else, 0. [batch size, 1, 1, src len]
-        :return output: output probabilities.
+        :return output: Output probabilities.
         :return attention: Normalized attention values.
         """
         # enc_src = [batch size, src len, hid dim]
@@ -164,7 +164,7 @@ class Seq2Seq(nn.Module):
         :param src_pad_idx: Source sequence tokenized and changed to integers for mask creation.
         :param trg_pad_idx: Target sequence tokenized and changed to integers for mask creation.
         (elements below the diagonal matrix will be set to the value in the input tensor).
-        :param device: run model on GPU or CPU.
+        :param device: Run model on GPU or CPU.
         """
         super().__init__()
 
@@ -222,7 +222,7 @@ class Seq2Seq(nn.Module):
 
         :param src: Source sequence. [batch size, src len]
         :param trg: Target sequence. [batch size, trg len]
-        :return output: output probabilities. [batch size, trg len, output dim]
+        :return output: Output probabilities. [batch size, trg len, output dim]
         :return attention: Normalized attention values. [batch size, n heads, trg len, src len]
         """
 
