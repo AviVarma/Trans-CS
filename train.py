@@ -148,14 +148,14 @@ def main():
 
         for i in range(train_df.shape[0]):
             try:
-                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], Const.fields)
+                ex = data.Example.fromlist([train_df.intent[i], train_df.snippet[i]], Const.fields)
                 train_example.append(ex)
             except:
                 pass
 
         for i in range(val_df.shape[0]):
             try:
-                ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], Const.fields)
+                ex = data.Example.fromlist([val_df.intent[i], val_df.snippet[i]], Const.fields)
                 val_example.append(ex)
             except:
                 pass
