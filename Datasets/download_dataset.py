@@ -2,7 +2,15 @@ import wget
 from zipfile import ZipFile
 import os
 
+
 def main():
+    """
+    Provide the URL to a dataset.
+    The dataset will be downloaded to "./Datasets/" directory.
+    The dataset is then extracted.
+    """
+
+    # Change this URL to you're dataset URL.
     site_url = "http://www.phontron.com/download/conala-corpus-v1.1.zip"
     dataset_path = "./Datasets/"
     wget.download(site_url, dataset_path)
