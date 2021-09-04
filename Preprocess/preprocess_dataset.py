@@ -17,11 +17,13 @@ from Components.utils import save
 from Components import enviroment_variables as env
 
 
-def pre_process_dataframe(filepath):
+def build_dataframe(filepath):
     """
+    Open filepath provided and create a dataframe.
+    Prune the dataframe of any redundant values and return the treated dataset.
 
-    :param filepath:
-    :return:
+    :param filepath: Filepath to saved dataframe.
+    :return: Pruned dataframe.
     """
 
     dataframe = pd.read_json(filepath)
@@ -39,8 +41,8 @@ def load_dataset(filepath):
     """
     load the dataset from the provided filepath and return the dataset as a list of dictionaries.
 
-    :param filepath: the file path for python to english dataset.
-    :return data_points: list containing a dictionary for all intents and their subsequent snippets.
+    :param filepath: The file path for text file dataset.
+    :return data_points: List containing a dictionary for all intents and their subsequent snippets.
     """
     file = open(filepath, "r", encoding="utf-8")
     file_lines = file.readlines()
@@ -184,8 +186,8 @@ def main():
     # data_points = load_dataset(env.DATASET_PATH)
     # train_df, val_df = build_train_val_dataset(data_points)
 
-    train_df = pre_process_dataframe(env.TRAIN_DF_PATH)
-    val_df = pre_process_dataframe(env.VAL_DF_PATH)
+    train_df = build_dataframe(env.TRAIN_DF_PATH)
+    val_df = build_dataframe(env.VAL_DF_PATH)
 
     save(env.TRAIN_DF_MODIFIED_PATH, dataframe=train_df)
     print(os.path.basename(env.TRAIN_DF_MODIFIED_PATH), "saved!")
