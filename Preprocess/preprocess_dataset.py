@@ -17,12 +17,30 @@ from Components.utils import save
 from Components import enviroment_variables as env
 
 
+def pre_process_dataframe(filepath):
+    """
+
+    :param filepath:
+    :return:
+    """
+
+    dataframe = pd.read_json(filepath)
+
+    del dataframe["rewritten_intent"]
+    del dataframe["question_id"]
+    dataframe = dataframe[~dataframe["intent"].str.contains('`')]
+    dataframe = dataframe[~dataframe["intent"].str.contains('`')]
+
+    return dataframe
+
+
+# This function should be implemented if you're dataset is a text file.
 def load_dataset(filepath):
     """
     load the dataset from the provided filepath and return the dataset as a list of dictionaries.
 
     :param filepath: the file path for python to english dataset.
-    :return data_points: list containing a dictionary for all questions and their subsequent solutions.
+    :return data_points: list containing a dictionary for all intents and their subsequent snippets.
     """
     file = open(filepath, "r", encoding="utf-8")
     file_lines = file.readlines()
@@ -32,13 +50,32 @@ def load_dataset(filepath):
     for line in file_lines:
         if line[0] == "#":
             if dp:
-                dp["solution"] = ''.join(dp["solution"])
+                dp["intent"] = ''.join(dp["snippet"])
                 data_points.append(dp)
-            dp = {"question": line[1:], "solution": []}
+            dp = {"intent": line[1:], "snippet": []}
         else:
-            dp["solution"].append(line)
+            dp["snippet"].append(line)
 
     return data_points
+
+def build_train_val_dataset(data_points):
+    """
+    Initialize a dataframe (python_data_frame) with data points as it's input.
+    With this crate a train dataset and validation dataset.
+
+    :param data_points: list containing a dictionary for all intents and their subsequent snippets.
+    :return train dataframe, validation dataframe: .
+    """
+    python_data_frame = pd.DataFrame(data_points)
+
+    np.random.seed(0)
+    # split the dataset into train: 0.85 val: 0.15
+    mask = np.random.rand(len(python_data_frame)) < 0.85
+
+    train_df = python_data_frame[mask]
+    val_df = python_data_frame[~mask]
+
+    return train_df, val_df
 
 
 def tokenize_python(src):
@@ -104,26 +141,6 @@ def mask_tokenize_python(src, mask_factor=0.3):
     return tokenized_output
 
 
-def build_train_val_dataset(data_points):
-    """
-    Initialize a dataframe (python_data_frame) with data points as it's input.
-    With this crate a train dataset and validation dataset.
-
-    :param data_points: list containing a dictionary for all questions and their subsequent solutions.
-    :return train dataframe, validation dataframe: .
-    """
-    python_data_frame = pd.DataFrame(data_points)
-
-    np.random.seed(0)
-    # split the dataset into train: 0.85 val: 0.15
-    mask = np.random.rand(len(python_data_frame)) < 0.85
-
-    train_df = python_data_frame[mask]
-    val_df = python_data_frame[~mask]
-
-    return train_df, val_df
-
-
 def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
     """
     Apply data augmentations expansion_factor times so majority of the augmentations have been
@@ -142,14 +159,14 @@ def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
     for j in range(expansion_factor):
         for i in range(train_df.shape[0]):
             try:
-                ex = data.Example.fromlist([train_df.question[i], train_df.solution[i]], fields)
+                ex = data.Example.fromlist([train_df.intent[i], train_df.snippet[i]], fields)
                 train_examples.append(ex)
             except:
                 pass
 
     for i in range(val_df.shape[0]):
         try:
-            ex = data.Example.fromlist([val_df.question[i], val_df.solution[i]], fields)
+            ex = data.Example.fromlist([val_df.intent[i], val_df.snippet[i]], fields)
             val_examples.append(ex)
         except:
             pass
@@ -164,13 +181,16 @@ def main():
     torch.cuda.manual_seed(env.SEED)
     torch.backends.cudnn.deterministic = True
 
-    data_points = load_dataset(env.DATASET_PATH)
-    train_df, val_df = build_train_val_dataset(data_points)
+    # data_points = load_dataset(env.DATASET_PATH)
+    # train_df, val_df = build_train_val_dataset(data_points)
 
-    save(env.TRAIN_DF_PATH, dataframe=train_df)
-    print("english_python_train.json saved!")
-    save(env.VAL_DF_PATH, dataframe=val_df)
-    print("english_python_val.json saved!")
+    train_df = pre_process_dataframe(env.TRAIN_DF_PATH)
+    val_df = pre_process_dataframe(env.VAL_DF_PATH)
+
+    save(env.TRAIN_DF_MODIFIED_PATH, dataframe=train_df)
+    print(os.path.basename(env.TRAIN_DF_MODIFIED_PATH), "saved!")
+    save(env.VAL_DF_MODIFIED_PATH, dataframe=val_df)
+    print(os.path.basename(env.VAL_DF_MODIFIED_PATH), "saved!")
 
     # create the vocabulary using torchtext
     Input = data.Field(tokenize=env.TOKENIZER,
