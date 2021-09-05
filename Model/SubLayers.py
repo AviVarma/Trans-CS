@@ -61,11 +61,11 @@ class MultiHeadAttentionLayer(nn.Module):
         self.n_heads = n_heads
         self.head_dim = hid_dim // n_heads
 
-        self.W_q = nn.Linear(hid_dim, hid_dim)
-        self.W_k = nn.Linear(hid_dim, hid_dim)
-        self.W_v = nn.Linear(hid_dim, hid_dim)
+        self.fc_q = nn.Linear(hid_dim, hid_dim)
+        self.fc_k = nn.Linear(hid_dim, hid_dim)
+        self.fc_v = nn.Linear(hid_dim, hid_dim)
 
-        self.W_o = nn.Linear(hid_dim, hid_dim)
+        self.fc_o = nn.Linear(hid_dim, hid_dim)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -99,9 +99,9 @@ class MultiHeadAttentionLayer(nn.Module):
         # attention, with V we will always have valid dimension sizes for matrix multiplication.
         batch_size = query.shape[0]
 
-        Q = self.W_q(query)
-        K = self.W_k(key)
-        V = self.W_v(value)
+        Q = self.fc_q(query)
+        K = self.fc_k(key)
+        V = self.fc_v(value)
 
         Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
         K = K.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
@@ -126,7 +126,7 @@ class MultiHeadAttentionLayer(nn.Module):
 
         x = x.view(batch_size, -1, self.hid_dim)
 
-        x = self.W_o(x)
+        x = self.fc_o(x)
 
         # x = [batch size, query len, hid dim]
 
