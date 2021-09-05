@@ -60,6 +60,7 @@ def load_dataset(filepath):
 
     return data_points
 
+
 def build_train_val_dataset(data_points):
     """
     Initialize a dataframe (python_data_frame) with data points as it's input.
@@ -182,6 +183,9 @@ def main():
     torch.manual_seed(env.SEED)
     torch.cuda.manual_seed(env.SEED)
     torch.backends.cudnn.deterministic = True
+
+    # Use these functions if you're dataset is a text file and you need to
+    # modify and split the dataset into train and val dataframes.
 
     # data_points = load_dataset(env.DATASET_PATH)
     # train_df, val_df = build_train_val_dataset(data_points)
