@@ -1,14 +1,11 @@
-from tokenize import untokenize
-
 import torch.optim
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
-from eval import evaluate, translate_sentence, save_attention
+from eval import evaluate
 from Components.utils import load, save, make_trg_mask, initialize_weights
 from torchtext.legacy.data import BucketIterator
 from torchtext.legacy import data
-import torch.nn as nn
 import Model.CrossEntropyLoss as CEL
 import Components.Constants as Const
 from tqdm import tqdm
@@ -18,35 +15,26 @@ import math
 
 def count_parameters(model):
     """
+    Count the number of parameters within the constructed transformer model.
 
-    :param model:
-    :return:
+    :param model: Fully constructed Transformer model (see Seq2Seq implementation).
+    :return: Number of parameters within the model.
     """
 
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-# def initialize_weights(w):
-#     """
-#
-#     :param w:
-#     :return:
-#     """
-#
-#     if hasattr(w, 'weight') and w.weight.dim() > 1:
-#         nn.init.xavier_uniform_(w.weight.data)
-
-
 def maskNLLLoss(inp, target, mask):
     """
+    Implement Cross Entropy Loss.
 
-    :param inp:
-    :param target:
-    :param mask:
-    :return:
+    :param inp: input.
+    :param target: target value.
+    :param mask: mask respective to source or target (defined in Seq2Seq)
+    :return loss: Loss value
+    :return nTotal: Mask's sum.
     """
 
-    # print(inp.shape, target.shape, mask.sum())
     nTotal = mask.sum()
     crossEntropy = CEL.CrossEntropyLoss(ignore_index=Const.TRG_PAD_IDX, smooth_eps=0.20)
     loss = crossEntropy(inp, target)
@@ -56,13 +44,14 @@ def maskNLLLoss(inp, target, mask):
 
 def train(model, iterator, optimizer, criterion, clip):
     """
+    Train the model where to iterate tqm is used to provide an interactive bar within the terminal when training.
 
-    :param model:
-    :param iterator:
-    :param optimizer:
-    :param criterion:
-    :param clip:
-    :return:
+    :param model: Constructed Transformer model (Seq2Seq).
+    :param iterator: BucketIterator split into validation and train iterator.
+    :param optimizer: optimizer of choice from torch.optim library.
+    :param criterion: maskNLLLoss.
+    :param clip: default = 1.
+    :return: current epoch loss.
     """
 
     model.train()
@@ -106,10 +95,12 @@ def train(model, iterator, optimizer, criterion, clip):
 
 def epoch_time(start_time, end_time):
     """
+    Calculate elapsed minutes and seconds.
 
-    :param start_time:
-    :param end_time:
-    :return:
+    :param start_time: Epoch start time.
+    :param end_time: Epoch end time.
+    :return elapsed_mins: elapsed minutes since start of epoch.
+    :return elapsed_secs: elapsed seconds since start of epoch.
     """
 
     elapsed_time = end_time - start_time
@@ -119,6 +110,7 @@ def epoch_time(start_time, end_time):
 
 
 def main():
+
     # load training and validation dataset
     train_df = load(env.TRAIN_DF_PATH, dataframe=True)
     val_df = load(env.VAL_DF_PATH, dataframe=True)
@@ -134,8 +126,6 @@ def main():
     model.apply(initialize_weights)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
-
-    #criterion = maskNLLLoss
 
     best_valid_loss = float('inf')
 
@@ -177,22 +167,10 @@ def main():
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
             save(env.MODEL_SAVE_PATH, model=model)
-            #torch.save(Const.model.state_dict(), env.MODEL_SAVE_PATH)
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
         print(f'\t Val. Loss: {valid_loss:.3f} |  Val. PPL: {math.exp(valid_loss):7.3f}')
-
-    # Evaluate the model.
-
-    src = "write a function that adds two numbers"
-    src = src.split(" ")
-    translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
-
-    print(f'predicted trg sequence: ')
-    print(translation)
-    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
-    save_attention(src, translation, attention)
 
 
 if __name__ == '__main__':
