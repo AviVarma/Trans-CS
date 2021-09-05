@@ -20,3 +20,4 @@ VOCAB_OUTPUT = "Saved/Vocabulary/Output.pkl"
 
 MODEL_SAVE_PATH = "Saved/Model_Checkpoints/model.pt"
 ATTENTION_PATH = "Saved/Evaluation_resources/attention_confusion_matrix.png"
+SAVED_PREDICTIONS = "Saved/Evaluation_resources/Outputs.txt"
