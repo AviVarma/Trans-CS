@@ -189,16 +189,27 @@ def calculate_bleu(model: Seq2Seq):
     val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
 
     references = []
-    for i in range(10):
-        references.append(tokenize_python(val_df.snippet[i]))
+    for i in range(val_df.shape[0]):
+        try:
+            hypothesis = eng_to_python(val_df.intent[i], model)
+            tokenize_python(hypothesis)
+            
+            references.append(tokenize_python(val_df.snippet[i]))
+        except:
+            pass
 
     res = 0
-    for i in range(10):
-        hypothesis = eng_to_python(val_df.intent[i], model)
-        tokenize_hypothesis = tokenize_python(hypothesis)
-        res += sentence_bleu(references, tokenize_hypothesis)
+    counter = 0
+    for i in range(val_df.shape[0]):
+        try:
+            hypothesis = eng_to_python(val_df.intent[i], model)
+            tokenize_hypothesis = tokenize_python(hypothesis)
+            res += sentence_bleu(references, tokenize_hypothesis)
+            counter += 1
+        except:
+            pass
 
-    print(res/val_df.shape[0])
+    print(res/counter)
 
 
 def calculate_sentence_bleu(query, ref, model: Seq2Seq):
