@@ -1,15 +1,17 @@
 from tokenize import untokenize
-
+import pandas as pd
 import spacy
 import torch.optim
 from matplotlib import pyplot as plt, ticker
 
-from Components.utils import is_dir
+from Preprocess.preprocess_dataset import tokenize_python
+from Components.utils import is_dir, load
 from Model.Models import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
 from Components.utils import make_trg_mask, initialize_weights
 import Components.Constants as Const
+from nltk.translate.bleu_score import sentence_bleu, corpus_bleu
 from tqdm import tqdm
 
 
@@ -106,14 +108,15 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
 
     is_dir(env.ATTENTION_PATH)
     plt.savefig(env.ATTENTION_PATH)
+    print("Attention confusion matrix saved at: " + env.ATTENTION_PATH)
 
 
-def eng_to_python(src, Input, Output, model):
+def eng_to_python(src, model: Seq2Seq):
     src = src.split(" ")
-    translation, attention = translate_sentence(src, Input, Output, model, env.DEVICE)
-
-    print(f'predicted trg: \n')
-    print(untokenize(translation[:-1]).decode('utf-8'))
+    translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
+    return untokenize(translation[:-1]).decode('utf-8')
+    #print(f'predicted trg: \n')
+    #print(untokenize(translation[:-1]).decode('utf-8'))
 
 
 def evaluate(model, iterator, criterion):
@@ -159,6 +162,67 @@ def evaluate(model, iterator, criterion):
     return sum(print_losses) / n_totals
 
 
+def predict_queries(model: Seq2Seq):
+    """
+    For each query within validation dataset, predict and save code snippet to a text file.
+
+    :param model: Trained transformer model
+    """
+
+    val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+    with open(env.SAVED_PREDICTIONS, 'w') as f:
+        for i in val_df["intent"]:
+            f.write("intent:\n")
+            f.write(i + "\n" + "predicted code:\n")
+            code = eng_to_python(i, model)
+            f.write(code + "\n\n")
+    print("Code predictions saved at: " + env.SAVED_PREDICTIONS)
+
+
+def calculate_bleu(model: Seq2Seq):
+    """
+    For each query within validation dataset, predict sentence BLEU score and return overall average.
+
+    :param model: Trained transformer model
+    """
+
+    val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+
+    references = []
+    for i in range(10):
+        references.append(tokenize_python(val_df.snippet[i]))
+
+    res = 0
+    for i in range(10):
+        hypothesis = eng_to_python(val_df.intent[i], model)
+        tokenize_hypothesis = tokenize_python(hypothesis)
+        res += sentence_bleu(references, tokenize_hypothesis)
+
+    print(res/val_df.shape[0])
+
+
+def calculate_sentence_bleu(query, ref, model: Seq2Seq):
+    """
+    Calculate sentence BLEU score for a specific query manually provided.
+
+    :param query: Input question.
+    :param ref: Dataframe containing intents relevant to input question.
+    :param model: Trained transformer model
+    """
+
+    val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+    df = val_df[val_df['intent'].str.contains(ref)]
+
+    hypothesis = eng_to_python(query, model)
+    tokenize_hypothesis = tokenize_python(hypothesis)
+
+    references = []
+    for i in df['snippet']:
+        references.append(tokenize_python(i))
+
+    print(sentence_bleu(references, tokenize_hypothesis))
+
+
 def main():
 
     enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
@@ -176,11 +240,10 @@ def main():
     src = "write a function that adds two numbers"
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
-
-    print(f'predicted trg sequence: ')
-    print(translation)
-    print("code: \n", untokenize(translation[:-1]).decode('utf-8'))
     save_attention(src, translation, attention)
+    calculate_bleu(model)
+    predict_queries(model)
+    calculate_sentence_bleu("split a multi-line string `inputString` into separate strings", "split", model)
 
 
 if __name__ == '__main__':
