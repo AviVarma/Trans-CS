@@ -6,7 +6,7 @@ EOS_TOKEN = '<eos>'
 TOKENIZER = 'spacy'
 MIN_FREQ = 0
 
-#DATASET_PATH = 'Datasets/english_python_data.txt'
+#DATASET_PATH = 'Datasets/text_file_dataset.txt'
 TRAIN_DF_PATH = "Datasets/conala-corpus/conala-train.json"
 VAL_DF_PATH = "Datasets/conala-corpus/conala-test.json"
 

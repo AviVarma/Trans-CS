@@ -19,7 +19,6 @@ Hyper-Parameters and Constants which require the Pre-processor to be first execu
 Input = pickle.load(open(VOCAB_INPUT, 'rb'))
 Output = pickle.load(open(VOCAB_OUTPUT, 'rb'))
 
-#
 fields = [('Input', Input), ('Output', Output)]
 
 # Calculate the total length for the saved vocabularies. Within the "Attention is all you need" transformer model

@@ -3,7 +3,6 @@ import torch
 import pickle
 import pandas as pd
 import torch.nn as nn
-import json
 import Components.enviroment_variables as env
 from torchtext.legacy import data
 
@@ -42,7 +41,7 @@ def save(filename, dataframe: pd.DataFrame = None, vocab: data = None, model=Non
 
 def load(filename, dataframe=False, vocab=False, model=False):
     """
-    Load datasets byt providing the file path and setting dataframe to true.
+    Load datasets by providing the file path and setting dataframe to true.
 
     :param filename: the file path eg: ./here/file.json
     :param dataframe: Boolean, if you want to load a dataframe.
