@@ -1,6 +1,23 @@
 import wget
 from zipfile import ZipFile
+import argparse
 import os
+
+
+def argument_parser():
+    """
+    Construct an argument parser and return the arguments.
+
+    :return: Arguments.
+    """
+
+    # Construct the argument parser
+    ap = argparse.ArgumentParser()
+
+    # Add the arguments to the parser
+    ap.add_argument("-u", "--url", required=True,
+                    help="url to dataset", type=str)
+    return vars(ap.parse_args())
 
 
 def main():
@@ -10,9 +27,11 @@ def main():
     The dataset is then extracted.
     """
 
-    # Change this URL to you're dataset URL.
-    site_url = "http://www.phontron.com/download/conala-corpus-v1.1.zip"
+    args = argument_parser()
+
+    site_url = args['url']
     dataset_path = "./Datasets/"
+
     wget.download(site_url, dataset_path)
     file = os.path.basename(site_url)
 
