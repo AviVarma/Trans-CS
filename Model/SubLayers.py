@@ -61,11 +61,11 @@ class MultiHeadAttentionLayer(nn.Module):
         self.n_heads = n_heads
         self.head_dim = hid_dim // n_heads
 
-        self.fc_q = nn.Linear(hid_dim, hid_dim)
-        self.fc_k = nn.Linear(hid_dim, hid_dim)
-        self.fc_v = nn.Linear(hid_dim, hid_dim)
+        self.W_q = nn.Linear(hid_dim, hid_dim)
+        self.W_k = nn.Linear(hid_dim, hid_dim)
+        self.W_v = nn.Linear(hid_dim, hid_dim)
 
-        self.fc_o = nn.Linear(hid_dim, hid_dim)
+        self.W_o = nn.Linear(hid_dim, hid_dim)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -80,11 +80,11 @@ class MultiHeadAttentionLayer(nn.Module):
         Scaled dot-product attention is similar to Luong dot product attention, but is scaled by d_k which is used to
         stop results of the dot product from growing too large and causing gradient to become too small.
 
-        To get Q, K, V, first calculate QW^Q, KW^K, VW^V with the initialized linear layers.
+        To get q, k, v, first calculate QW^q, KW^k, VW^v with the initialized linear layers.
         Split the hid_dim into n_heads using .view(). Permute through them and multiply together.
-        Calculate the energy by Q * K and scaling it by the square root of head_dim (head dim // n_heads).
+        Calculate the energy by q * k and scaling it by the square root of head_dim (head dim // n_heads).
         mask the energy so that attention is not given to sequences that should not not be covered; apply softmax and
-        dropout. Apply this attention to value heads (V), then combine n_heads together.
+        dropout. Apply this attention to value heads (v), then combine n_heads together.
         Multiply result with W_O.
 
         :param query: Words from the input sequence. [batch size, query len, hid dim]
@@ -96,22 +96,22 @@ class MultiHeadAttentionLayer(nn.Module):
         """
 
         # lengths of the keys and values are always the same, thus when matrix multiplying the output of the softmax,
-        # attention, with V we will always have valid dimension sizes for matrix multiplication.
+        # attention, with v we will always have valid dimension sizes for matrix multiplication.
         batch_size = query.shape[0]
 
-        Q = self.fc_q(query)
-        K = self.fc_k(key)
-        V = self.fc_v(value)
+        q = self.W_q(query)
+        k = self.W_k(key)
+        v = self.W_v(value)
 
-        Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        K = K.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        V = V.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        q = q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        k = k.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        v = v.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
 
-        # Q = [batch size, n heads, query len, head dim]
-        # K = [batch size, n heads, key len, head dim]
-        # V = [batch size, n heads, value len, head dim]
+        # q = [batch size, n heads, query len, head dim]
+        # k = [batch size, n heads, key len, head dim]
+        # v = [batch size, n heads, value len, head dim]
 
-        energy = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
+        energy = torch.matmul(q, k.permute(0, 1, 3, 2)) / self.scale
 
         # energy = [batch size, n heads, query len, key len]
 
@@ -120,13 +120,13 @@ class MultiHeadAttentionLayer(nn.Module):
 
         attention = torch.softmax(energy, dim=-1)
 
-        x = torch.matmul(self.dropout(attention), V)
+        x = torch.matmul(self.dropout(attention), v)
 
         x = x.permute(0, 2, 1, 3).contiguous()
 
         x = x.view(batch_size, -1, self.hid_dim)
 
-        x = self.fc_o(x)
+        x = self.W_o(x)
 
         # x = [batch size, query len, hid dim]
 
