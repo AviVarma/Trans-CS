@@ -17,7 +17,7 @@ from Components.utils import save
 from Components import enviroment_variables as env
 
 
-def build_dataframe(filepath):
+def load_dataframe(filepath):
     """
     Open filepath provided and create a dataframe.
     Prune the dataframe of any redundant values and return the treated dataset.
@@ -38,7 +38,7 @@ def build_dataframe(filepath):
 
 
 # This function should be implemented if you're dataset is a text file.
-def load_dataset(filepath):
+def load_text_dataset(filepath):
     """
     load the dataset from the provided filepath and return the dataset as a list of dictionaries.
 
@@ -191,8 +191,8 @@ def main():
     # data_points = load_dataset(env.DATASET_PATH)
     # train_df, val_df = build_train_val_dataset(data_points)
 
-    train_df = build_dataframe(env.TRAIN_DF_PATH)
-    val_df = build_dataframe(env.VAL_DF_PATH)
+    train_df = load_dataframe(env.TRAIN_DF_PATH)
+    val_df = load_dataframe(env.VAL_DF_PATH)
 
     save(env.TRAIN_DF_MODIFIED_PATH, dataframe=train_df)
     print(os.path.basename(env.TRAIN_DF_MODIFIED_PATH), "saved!")

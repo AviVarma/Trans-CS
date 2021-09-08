@@ -193,10 +193,13 @@ def calculate_bleu(model: Seq2Seq):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_python(hypothesis)
-            
+
             references.append(tokenize_python(val_df.snippet[i]))
-        except:
+        except Exception:
             pass
+
+        # try using from contextlib import suppress from:
+        # https://stackoverflow.com/questions/574730/python-how-to-ignore-an-exception-and-proceed
 
     res = 0
     counter = 0
