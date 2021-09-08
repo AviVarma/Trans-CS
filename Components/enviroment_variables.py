@@ -4,6 +4,7 @@ SEED = 1234
 INIT_TOKEN = '<sos>'
 EOS_TOKEN = '<eos>'
 TOKENIZER = 'spacy'
+SPACY_INPUT_LANG = "en_core_web_sm"
 MIN_FREQ = 0
 
 #DATASET_PATH = 'Datasets/text_file_dataset.txt'

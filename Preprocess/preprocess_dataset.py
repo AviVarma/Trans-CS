@@ -110,9 +110,10 @@ def mask_tokenize_python(src, mask_factor=0.3):
     :return tokenized_output: list for the source code tokenized format [python token type, python token]
     """
     var_dict = {}  # Dictionary that stores masked variables
-
+    # Increase this depending on you're dataset.
     skip_list = ['range', 'enumerate', 'print', 'ord', 'int', 'float', 'zip',
-                 'char', 'list', 'dict', 'tuple', 'set', 'len', 'sum', 'min', 'max']
+                 'char', 'list', 'dict', 'tuple', 'set', 'len', 'sum', 'min', 'max', 'os', 'numpy', 'pandas', 'Pendulum'
+                 'openCV', 'requests', 'HTTP', 'tkinter']
     skip_list.extend(keyword.kwlist)
 
     counter = 1
@@ -200,6 +201,7 @@ def main():
     print(os.path.basename(env.VAL_DF_MODIFIED_PATH), "saved!")
 
     # create the vocabulary using torchtext
+    # if you
     Input = data.Field(tokenize=env.TOKENIZER,
                        init_token=env.INIT_TOKEN,
                        eos_token=env.EOS_TOKEN)
