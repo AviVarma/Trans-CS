@@ -1,5 +1,5 @@
 import torch.optim
-from Model.Models import Encoder, Decoder, Seq2Seq
+from Model.Model import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
 from eval import evaluate

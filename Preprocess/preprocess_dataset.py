@@ -145,7 +145,7 @@ def mask_tokenize_python(src, mask_factor=0.3):
     return tokenized_output
 
 
-def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
+def generate_masked_vocabulary(train_df, val_df, fields, expansion_factor=100):
     """
     Apply data augmentations expansion_factor times so majority of the augmentations have been
     captured in the vocabulary. This will generalize and expand the vocabulary beyond the
@@ -155,27 +155,27 @@ def expand_vocabulary(train_df, val_df, fields, expansion_factor=100):
     :param val_df: validation dataframe from build_train_val_dataset()
     :param fields: [('Input', Input),('Output', Output)]
     :param expansion_factor: number of times to apply data augmentations, default=100.
-    :return train_examples, val_examples: list containing all tokens as torchtext.legacy.data.example.Example objects.
+    :return train_vocab_list, val_vocab_list: list containing all tokens as torchtext.legacy.data.example.Example objects.
     """
-    train_examples = []
-    val_examples = []
+    train_vocab_list = []
+    val_vocab_list = []
 
     for j in range(expansion_factor):
         for i in range(train_df.shape[0]):
             try:
                 ex = data.Example.fromlist([train_df.intent[i], train_df.snippet[i]], fields)
-                train_examples.append(ex)
+                train_vocab_list.append(ex)
             except:
                 pass
 
     for i in range(val_df.shape[0]):
         try:
             ex = data.Example.fromlist([val_df.intent[i], val_df.snippet[i]], fields)
-            val_examples.append(ex)
+            val_vocab_list.append(ex)
         except:
             pass
 
-    return train_examples, val_examples
+    return train_vocab_list, val_vocab_list
 
 
 def main():
@@ -211,7 +211,7 @@ def main():
                         lower=False)
 
     fields = [('Input', Input), ('Output', Output)]
-    train_examples, val_examples = expand_vocabulary(train_df, val_df, fields)
+    train_examples, val_examples = generate_masked_vocabulary(train_df, val_df, fields)
 
     train_data = data.Dataset(train_examples, fields)
     val_data = data.Dataset(val_examples, fields)

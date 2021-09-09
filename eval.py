@@ -1,3 +1,4 @@
+import tokenize
 from tokenize import untokenize
 import pandas as pd
 import spacy
@@ -6,7 +7,7 @@ from matplotlib import pyplot as plt, ticker
 
 from Preprocess.preprocess_dataset import tokenize_python
 from Components.utils import is_dir, load
-from Model.Models import Encoder, Decoder, Seq2Seq
+from Model.Model import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
 from Components.utils import make_trg_mask, initialize_weights
@@ -195,7 +196,7 @@ def calculate_bleu(model: Seq2Seq):
             tokenize_python(hypothesis)
 
             references.append(tokenize_python(val_df.snippet[i]))
-        except Exception:
+        except:
             pass
 
         # try using from contextlib import suppress from:
