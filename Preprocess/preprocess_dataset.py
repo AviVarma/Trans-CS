@@ -112,8 +112,7 @@ def mask_tokenize_python(src, mask_factor=0.3):
     var_dict = {}  # Dictionary that stores masked variables
     # Increase this depending on you're dataset.
     skip_list = ['range', 'enumerate', 'print', 'ord', 'int', 'float', 'zip',
-                 'char', 'list', 'dict', 'tuple', 'set', 'len', 'sum', 'min', 'max', 'os', 'numpy', 'pandas', 'Pendulum'
-                 'openCV', 'requests', 'HTTP', 'tkinter']
+                 'char', 'list', 'dict', 'tuple', 'set', 'len', 'sum', 'min', 'max']
     skip_list.extend(keyword.kwlist)
 
     counter = 1
