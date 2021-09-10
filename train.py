@@ -2,7 +2,7 @@ import torch.optim
 from Model.Model import Encoder, Decoder, Seq2Seq
 from Components import enviroment_variables as env
 from Preprocess.preprocess_dataset import mask_tokenize_python
-from eval import evaluate
+from eval import evaluate, init_transformer
 from Components.utils import load, save, make_trg_mask, initialize_weights
 from torchtext.legacy.data import BucketIterator
 from torchtext.legacy import data
@@ -115,15 +115,7 @@ def main():
     train_df = load(env.TRAIN_DF_PATH, dataframe=True)
     val_df = load(env.VAL_DF_PATH, dataframe=True)
 
-    enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
-                  Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
-
-    dec = Decoder(Const.OUTPUT_DIM, Const.HID_DIM, Const.DEC_LAYERS, Const.DEC_HEADS,
-                  Const.DEC_PF_DIM, Const.DEC_DROPOUT, env.DEVICE)
-
-    model = Seq2Seq(enc, dec, Const.SRC_PAD_IDX, Const.TRG_PAD_IDX, env.DEVICE).to(env.DEVICE)
-
-    model.apply(initialize_weights)
+    model = init_transformer(eval=False)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
 
