@@ -116,8 +116,6 @@ def eng_to_python(src, model: Seq2Seq):
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     return untokenize(translation[:-1]).decode('utf-8')
-    #print(f'predicted trg: \n')
-    #print(untokenize(translation[:-1]).decode('utf-8'))
 
 
 def evaluate(model, iterator, criterion):
@@ -173,10 +171,14 @@ def predict_queries(model: Seq2Seq):
     val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
     with open(env.SAVED_PREDICTIONS, 'w') as f:
         for i in val_df["intent"]:
-            f.write("intent:\n")
-            f.write(i + "\n" + "predicted code:\n")
-            code = eng_to_python(i, model)
-            f.write(code + "\n\n")
+            try:
+                f.write("intent:\n")
+                f.write(i + "\n" + "predicted code:\n")
+                code = eng_to_python(i, model)
+                print(i)
+                f.write(code + "\n\n")
+            except:
+                pass
     print("Code predictions saved at: " + env.SAVED_PREDICTIONS)
 
 
@@ -194,6 +196,7 @@ def calculate_bleu(model: Seq2Seq):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_python(hypothesis)
+            print(i)
 
             references.append(tokenize_python(val_df.snippet[i]))
         except:
@@ -208,6 +211,7 @@ def calculate_bleu(model: Seq2Seq):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_hypothesis = tokenize_python(hypothesis)
+            print(i)
             res += sentence_bleu(references, tokenize_hypothesis)
             counter += 1
         except:
