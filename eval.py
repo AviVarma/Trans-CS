@@ -126,14 +126,14 @@ def eng_to_python(src, model: Seq2Seq):
     return untokenize(translation[:-1]).decode('utf-8')
 
 
-def evaluate(model, iterator, criterion):
+def evaluate(model, iterator, NKLLLoss):
     """
     The evaluation loop, similar to the training loop, but without parameter updates and gradient
     calculation. calculate the Loss for the current model.
 
     :param model: Seq2Seq fully constructed transformer model.
     :param iterator: BucketIterator split into batches.
-    :param criterion: NKLLLoss.
+    :param NKLLLoss: NKLLLoss function.
     :return: Loss for current epoch.
     """
 
@@ -161,10 +161,10 @@ def evaluate(model, iterator, criterion):
             # output = [batch size * trg len - 1, output dim]
             # trg = [batch size * trg len - 1]
 
-            mask_loss, nTotal = criterion(output, trg, trg_mask)
+            mask_loss, n_total = NKLLLoss(output, trg, trg_mask)
 
-            print_losses.append(mask_loss.item() * nTotal)
-            n_totals += nTotal
+            print_losses.append(mask_loss.item() * n_total)
+            n_totals += n_total
 
     return sum(print_losses) / n_totals
 
@@ -250,15 +250,15 @@ def calculate_sentence_bleu(query, ref, model: Seq2Seq):
     print(sentence_bleu(references, tokenize_hypothesis))
 
 
-def init_transformer():
+def init_transformer(eval: bool = True):
     """
     Initialize the Transformer model by constructing the encoder and decoder.
     Parse both the encoder and decoder into the Seq2Seq, initialize the weights, and load in the best trained
     parameters.
 
+    :param eval: If function is being used for training or evaluating.
     :return model: model with pre-trained parameters.
     """
-
     enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
                   Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
 
@@ -269,7 +269,8 @@ def init_transformer():
 
     model.apply(initialize_weights)
 
-    model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
+    if eval:
+        model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
 
     return model
 
