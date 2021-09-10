@@ -1,8 +1,7 @@
 import os
 import pickle
 import sys
-from Components.enviroment_variables import VOCAB_INPUT, VOCAB_OUTPUT, DEVICE
-from Model.Model import Seq2Seq, Encoder, Decoder
+from Components.enviroment_variables import VOCAB_INPUT, VOCAB_OUTPUT
 
 # Change the current directory to the parent directory so that Preprocess directory can be accessed.
 current_dir = os.path.dirname(os.path.realpath(__file__))
