@@ -177,13 +177,13 @@ def predict_queries(model: Seq2Seq):
     """
 
     val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+    print("writing predictions down...")
     with open(env.SAVED_PREDICTIONS, 'w') as f:
-        for i in val_df["intent"]:
+        for i in tqdm(val_df["intent"]):
             try:
                 f.write("intent:\n")
                 f.write(i + "\n" + "predicted code:\n")
                 code = eng_to_python(i, model)
-                print(i)
                 f.write(code + "\n\n")
             except:
                 pass
@@ -200,11 +200,11 @@ def calculate_bleu(model: Seq2Seq):
     val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
 
     references = []
-    for i in range(val_df.shape[0]):
+    print("Generating references...")
+    for i in tqdm(range(val_df.shape[0])):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_python(hypothesis)
-            print(i)
 
             references.append(tokenize_python(val_df.snippet[i]))
         except:
@@ -215,11 +215,11 @@ def calculate_bleu(model: Seq2Seq):
 
     res = 0
     counter = 0
-    for i in range(val_df.shape[0]):
+    print("Calculating hypotheses...")
+    for i in tqdm(range(val_df.shape[0])):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_hypothesis = tokenize_python(hypothesis)
-            print(i)
             res += sentence_bleu(references, tokenize_hypothesis)
             counter += 1
         except:
