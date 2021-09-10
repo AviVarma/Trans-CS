@@ -238,7 +238,14 @@ def calculate_sentence_bleu(query, ref, model: Seq2Seq):
     print(sentence_bleu(references, tokenize_hypothesis))
 
 
-def main():
+def init_transformer():
+    """
+    Initialize the Transformer model by constructing the encoder and decoder.
+    Parse both the encoder and decoder into the Seq2Seq, initialize the weights, and load in the best trained
+    parameters.
+
+    :return model: model with pre-trained parameters.
+    """
 
     enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
                   Const.ENC_PF_DIM, Const.ENC_DROPOUT, env.DEVICE)
@@ -251,6 +258,12 @@ def main():
     model.apply(initialize_weights)
 
     model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
+
+    return model
+
+
+def main():
+    model = init_transformer()
 
     src = "write a function that adds two numbers"
     src = src.split(" ")
