@@ -113,6 +113,14 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
 
 
 def eng_to_python(src, model: Seq2Seq):
+    """
+    Execute translate_sentence function and return a formatted output.
+
+    :param src: input query.
+    :param model: pre-trained model.
+    :return source code: source code in utf-8 format.
+    """
+
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     return untokenize(translation[:-1]).decode('utf-8')
