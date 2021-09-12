@@ -100,7 +100,7 @@ def tokenize_python(src):
 
 def mask_tokenize_python(src, mask_factor=0.3):
     """
-    randomly pick variables and mask them with  'var_1, 'var_2' etc to make sure the model does not
+    Randomly pick variables and mask them with  'var_1, 'var_2' etc to make sure the model does not
     fixate on the way variables are named amd understands the program's logic. When randomly picking
     the variables, python's reserved keyword literals, control structures and object properties are
     ignored.
