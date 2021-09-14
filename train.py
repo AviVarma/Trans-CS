@@ -115,7 +115,7 @@ def main():
     train_df = load(env.TRAIN_DF_PATH, dataframe=True)
     val_df = load(env.VAL_DF_PATH, dataframe=True)
 
-    model = init_transformer(eval=False)
+    model = init_transformer(is_eval=False)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=Const.LEARNING_RATE)
 

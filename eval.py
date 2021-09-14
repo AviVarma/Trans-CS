@@ -192,7 +192,7 @@ def predict_queries(model: Seq2Seq):
 
 def calculate_bleu(model: Seq2Seq):
     """
-    For each query within validation dataset, predict sentence BLEU score and return overall average.
+    For each query within validation dataset, predict sentence BLEU-4 score and return overall average.
 
     :param model: Trained transformer model
     """
@@ -220,7 +220,7 @@ def calculate_bleu(model: Seq2Seq):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_hypothesis = tokenize_python(hypothesis)
-            res += sentence_bleu(references, tokenize_hypothesis)
+            res += sentence_bleu(references, tokenize_hypothesis, weights=(0, 0, 0, 1))
             counter += 1
         except:
             pass
@@ -247,16 +247,27 @@ def calculate_sentence_bleu(query, ref, model: Seq2Seq):
     for i in df['snippet']:
         references.append(tokenize_python(i))
 
-    print(sentence_bleu(references, tokenize_hypothesis))
+    return sentence_bleu(references, tokenize_hypothesis)
 
 
-def init_transformer(eval: bool = True):
+def evaluate_conala_sentence_bleu(model: Seq2Seq):
+    r1 = calculate_sentence_bleu("split a multi-line string `inputString` into separate strings", "split", model)
+    r2 = calculate_sentence_bleu("get rid of None values in dictionary?", "dictionary", model)
+    r3 = calculate_sentence_bleu("download a file over HTTP", "HTTP", model)
+    r4 = calculate_sentence_bleu("Merging two pandas dataframes", "pandas dataframe", model)
+    r5 = calculate_sentence_bleu("Python how to combine two matrices in numpy", "numpy", model)
+
+    print(r1, r2, r3, r4, r5)
+    print((r1 + r2 + r3 + r4 + r5) / 5)
+
+
+def init_transformer(is_eval: bool = True):
     """
     Initialize the Transformer model by constructing the encoder and decoder.
     Parse both the encoder and decoder into the Seq2Seq, initialize the weights, and load in the best trained
     parameters.
 
-    :param eval: If function is being used for training or evaluating.
+    :param is_eval: If function is being used for training or evaluating.
     :return model: model with pre-trained parameters.
     """
     enc = Encoder(Const.INPUT_DIM, Const.HID_DIM, Const.ENC_LAYERS, Const.ENC_HEADS,
@@ -269,7 +280,7 @@ def init_transformer(eval: bool = True):
 
     model.apply(initialize_weights)
 
-    if eval:
+    if is_eval:
         model.load_state_dict(torch.load(env.MODEL_SAVE_PATH))
 
     return model
@@ -284,7 +295,7 @@ def main():
     save_attention(src, translation, attention)
     calculate_bleu(model)
     predict_queries(model)
-    calculate_sentence_bleu("split a multi-line string `inputString` into separate strings", "split", model)
+    evaluate_conala_sentence_bleu(model)
 
 
 if __name__ == '__main__':
