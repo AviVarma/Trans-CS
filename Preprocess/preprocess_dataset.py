@@ -30,8 +30,6 @@ def load_dataframe(filepath):
 
     del dataframe["rewritten_intent"]
     del dataframe["question_id"]
-    dataframe = dataframe[~dataframe["intent"].str.contains("`")]
-    dataframe = dataframe[~dataframe["intent"].str.contains("'")]
     dataframe = dataframe[~dataframe["intent"].str.contains("-")]
 
     return dataframe
