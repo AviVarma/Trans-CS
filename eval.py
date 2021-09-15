@@ -200,32 +200,20 @@ def calculate_bleu(model: Seq2Seq):
     val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
 
     references = []
-    print("Generating references...")
-    for i in tqdm(range(val_df.shape[0])):
-        try:
-            hypothesis = eng_to_python(val_df.intent[i], model)
-            tokenize_python(hypothesis)
-
-            references.append(tokenize_python(val_df.snippet[i]))
-        except:
-            pass
-
-        # try using from contextlib import suppress from:
-        # https://stackoverflow.com/questions/574730/python-how-to-ignore-an-exception-and-proceed
-
-    res = 0
-    counter = 0
-    print("Calculating hypotheses...")
+    hyps = []
+    print("Calculating corpus BLEU...")
     for i in tqdm(range(val_df.shape[0])):
         try:
             hypothesis = eng_to_python(val_df.intent[i], model)
             tokenize_hypothesis = tokenize_python(hypothesis)
-            res += sentence_bleu(references, tokenize_hypothesis, weights=(0, 0, 0, 1))
-            counter += 1
+
+            tokenized_ref = tokenize_python(val_df.snippet[i])
+            references.append([tokenized_ref])
+            hyps.append(tokenize_hypothesis)
         except:
             pass
 
-    print(res/counter)
+    return corpus_bleu(references, hyps, weights=(0, 0, 0, 1))
 
 
 def calculate_sentence_bleu(query, ref, model: Seq2Seq):
@@ -257,8 +245,8 @@ def evaluate_conala_sentence_bleu(model: Seq2Seq):
     r4 = calculate_sentence_bleu("Merging two pandas dataframes", "pandas dataframe", model)
     r5 = calculate_sentence_bleu("Python how to combine two matrices in numpy", "numpy", model)
 
-    print(r1, r2, r3, r4, r5)
-    print((r1 + r2 + r3 + r4 + r5) / 5)
+    # print(r1, r2, r3, r4, r5)
+    return (r1 + r2 + r3 + r4 + r5) / 5
 
 
 def init_transformer(is_eval: bool = True):
@@ -293,9 +281,21 @@ def main():
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     save_attention(src, translation, attention)
-    calculate_bleu(model)
+    c_bleu = calculate_bleu(model)
+    s_bleu = evaluate_conala_sentence_bleu(model)
+    print("Corpus BLEU: " , c_bleu)
+    print("Sentence BLEU: " , s_bleu)
     predict_queries(model)
-    evaluate_conala_sentence_bleu(model)
+
+    # save the outputs:
+    with open(env.SAVED_PERFORMANCE, 'w') as f:
+        f.write("Corpus BLEU: ")
+        f.write(str(c_bleu))
+        f.write("\n")
+        f.write("Sentence BLEU: ")
+        f.write(str(s_bleu))
+        f.write("\n")
+    print("Code predictions saved at: " + env.SAVED_PERFORMANCE)
 
 
 if __name__ == '__main__':
