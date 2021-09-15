@@ -1,4 +1,6 @@
 # Trans-CS
+![Trans-CS Training Architecture](./readme_resources/Tras-CS_train.jpg "Trans-CS Training Architecture")
+![Trans-CS Evaluation Architecture](./readme_resources/Tras-CS_eval.jpg "Trans-CS Evaluation Architecture")
 
 ## Pre-requisites:
 
