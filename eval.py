@@ -282,9 +282,9 @@ def main():
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     save_attention(src, translation, attention)
     c_bleu = calculate_bleu(model)
-    # s_bleu = evaluate_conala_sentence_bleu(model)
+    s_bleu = evaluate_conala_sentence_bleu(model)
     print("Corpus BLEU: " , c_bleu)
-    # print("Sentence BLEU: " , s_bleu)
+    print("Sentence BLEU: " , s_bleu)
     predict_queries(model)
 
     # save the outputs:
@@ -292,9 +292,9 @@ def main():
         f.write("Corpus BLEU: ")
         f.write(str(c_bleu))
         f.write("\n")
-        # f.write("Sentence BLEU: ")
-        # f.write(str(s_bleu))
-        # f.write("\n")
+        f.write("Sentence BLEU: ")
+        f.write(str(s_bleu))
+        f.write("\n")
     print("Code predictions saved at: " + env.SAVED_PERFORMANCE)
 
 
