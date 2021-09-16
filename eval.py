@@ -3,7 +3,7 @@ from tokenize import untokenize
 import pandas as pd
 import spacy
 import torch.optim
-from matplotlib import pyplot as plt, ticker
+from matplotlib import pyplot as plt
 
 from Preprocess.preprocess_dataset import tokenize_python
 from Components.utils import is_dir, load
@@ -97,15 +97,15 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
 
         _attention = attention.squeeze(0)[i].cpu().detach().numpy()
 
-        cax = ax.matshow(_attention, cmap='bone')
+        cax = ax.matshow(_attention, cmap='inferno')
 
         ax.tick_params(labelsize=12)
         ax.set_xticklabels([''] + ['<sos>'] + [t.lower() for t in sentence] + ['<eos>'],
                            rotation=45)
         ax.set_yticklabels([''] + translation)
 
-        ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-        ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+        ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+        ax.yaxis.set_major_locator(plt.MultipleLocator(1))
 
     is_dir(env.ATTENTION_PATH)
     plt.savefig(env.ATTENTION_PATH)
