@@ -277,7 +277,8 @@ def init_transformer(is_eval: bool = True):
 def main():
     model = init_transformer()
 
-    src = "write a function that adds two numbers"
+    val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+    src = val_df.intent[0]
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     save_attention(src, translation, attention)
