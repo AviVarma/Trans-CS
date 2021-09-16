@@ -110,12 +110,12 @@ def mask_tokenize_python(src, mask_factor=0.3):
     var_dict = {}  # Dictionary that stores masked variables
     # Increase this depending on you're dataset.
     skip_list = ['range', 'enumerate', 'print', 'ord', 'int', 'float', 'zip', 'char', 'list', 'dict', 'tuple', 'set',
-                 'len', 'sum', 'min', 'max', 'os', 'np', 'df', 'signal', 'bytes', 'kwargs', 'subprocess', 'client',
-                 'datetime', 'warnings', 'time', 'sys', 'urllib', 'pickle', 'scipy', 'numpy', 'pandas', 'struct',
-                 'base64', 'request', 'ftp', 'browser', 'random', 'inputString', 'base64', 'db', 'browser',
-                 're', 'open', 'plt', 'self', 'shutil', 'str', 'list', 'cursor', 'driver' 'bool', 'sorted',
-                 'writer', 'super', 'any', 'image', 'heapq', 'soup', 'getattr', 'map', 'json', 'data', 'isinstance',
-                 'round', 'matplotlib', 'flask', 'type', 'next', 'itertools']
+                 'len', 'sum', 'min', 'max', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'breakpoint', 'bytearray',
+                 'bytes', 'callable', 'chr', 'classmethod', 'compile', 'complex', 'delattr', 'dir', 'divmod', 'eval',
+                 'exec', 'filter', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 'help', 'hex',
+                 'id', 'input', 'isinstance', 'issubclass', 'iter', 'list', 'locals', 'map', 'memoryview', 'next',
+                 'object', 'oct', 'open', 'ord', 'pow', 'property', 'range', 'repr', 'reversed', 'round', 'set',
+                 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 'super', 'type', 'vars', '__import__']
     skip_list.extend(keyword.kwlist)
 
     counter = 1
