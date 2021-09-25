@@ -110,12 +110,12 @@ def mask_tokenize_python(src, mask_factor=0.3):
     var_dict = {}  # Dictionary that stores masked variables
     # Increase this depending on you're dataset.
     skip_list = ['range', 'enumerate', 'print', 'ord', 'int', 'float', 'zip', 'char', 'list', 'dict', 'tuple', 'set',
-                 'len', 'sum', 'min', 'max', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'breakpoint', 'bytearray',
-                 'bytes', 'callable', 'chr', 'classmethod', 'compile', 'complex', 'delattr', 'dir', 'divmod', 'eval',
-                 'exec', 'filter', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 'help', 'hex',
-                 'id', 'input', 'isinstance', 'issubclass', 'iter', 'list', 'locals', 'map', 'memoryview', 'next',
-                 'object', 'oct', 'open', 'ord', 'pow', 'property', 'range', 'repr', 'reversed', 'round', 'set',
-                 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 'super', 'type', 'vars', '__import__']
+             'len', 'sum', 'min', 'max', 'os', 'np', 'df', 'signal', 'bytes', 'kwargs', 'subprocess', 'client',
+             'datetime', 'warnings', 'time', 'sys', 'urllib', 'pickle', 'scipy', 'numpy', 'pandas', 'struct',
+             'base64', 'request', 'ftp', 'browser', 'random', 'inputString', 'base64', 'db', 'browser',
+             're', 'open', 'plt', 'self', 'shutil', 'str', 'list', 'cursor', 'driver' 'bool', 'sorted',
+             'writer', 'super', 'any', 'image', 'heapq', 'soup', 'getattr', 'map', 'json', 'data', 'isinstance',
+             'round', 'matplotlib', 'flask', 'type', 'next', 'itertools']
     skip_list.extend(keyword.kwlist)
 
     counter = 1
@@ -148,7 +148,7 @@ def mask_tokenize_python(src, mask_factor=0.3):
     return tokenized_output
 
 
-def generate_masked_vocabulary(train_df, val_df, fields, expansion_factor=100):
+def generate_masked_vocabulary(train_df, val_df, fields, expansion_factor=1):
     """
     Apply data augmentations expansion_factor times so majority of the augmentations have been
     captured in the vocabulary. This will generalize and expand the vocabulary beyond the
