@@ -90,7 +90,7 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
 
     assert n_rows * n_cols == n_heads
 
-    fig = plt.figure(figsize=(30, 50))
+    fig = plt.figure(figsize=(35, 55))
 
     for i in range(n_heads):
         ax = fig.add_subplot(n_rows, n_cols, i + 1)
@@ -99,7 +99,7 @@ def save_attention(sentence, translation, attention, n_heads=8, n_rows=4, n_cols
 
         cax = ax.matshow(_attention, cmap='inferno')
 
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=25)
         ax.set_xticklabels([''] + ['<sos>'] + [t.lower() for t in sentence] + ['<eos>'],
                            rotation=45)
         ax.set_yticklabels([''] + translation)
@@ -277,23 +277,19 @@ def init_transformer(is_eval: bool = True):
 def main():
     model = init_transformer()
 
-    src = "write a function that adds two numbers"
+    val_df = pd.read_json(env.VAL_DF_MODIFIED_PATH)
+    src = val_df.intent[0]
     src = src.split(" ")
     translation, attention = translate_sentence(src, Const.Input, Const.Output, model, env.DEVICE)
     save_attention(src, translation, attention)
     c_bleu = calculate_bleu(model)
-    s_bleu = evaluate_conala_sentence_bleu(model)
     print("Corpus BLEU: " , c_bleu)
-    print("Sentence BLEU: " , s_bleu)
     predict_queries(model)
 
     # save the outputs:
     with open(env.SAVED_PERFORMANCE, 'w') as f:
         f.write("Corpus BLEU: ")
         f.write(str(c_bleu))
-        f.write("\n")
-        f.write("Sentence BLEU: ")
-        f.write(str(s_bleu))
         f.write("\n")
     print("Code predictions saved at: " + env.SAVED_PERFORMANCE)
 
